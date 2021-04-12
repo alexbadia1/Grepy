@@ -23,8 +23,8 @@ import java.util.regex.PatternSyntaxException;
  *  - String TERM_NUMERIC ::== 0-9
  *  - String TERM_UNICODE ::== any unicode character [see https://home.unicode.org/]
  *  - String SYMBOL_OPEN_GROUP ::== (
- *  - String SYMBOL_OPEN_GROUP ::== )
- *  - String SYMBOL_CONCATENATION ::== +
+ *  - String SYMBOL_CLOSE_GROUP ::== )
+ *  - String SYMBOL_UNION ::== +
  *  - String SYMBOL_KLEENE_STAR ::== *
  *  
  */
@@ -114,7 +114,7 @@ public class Lexer {
 							this.emitToken(new Token("SYMBOL_KLEENE_STAR", Character.toString(lexeme.charAt(0))));
 							break;
 						case '+': 
-							this.emitToken(new Token("SYMBOL_CONCATENATION", Character.toString(lexeme.charAt(0))));
+							this.emitToken(new Token("SYMBOL_UNION", Character.toString(lexeme.charAt(0))));
 							break;
 						default:
 							// This should never happen...
@@ -173,6 +173,24 @@ public class Lexer {
 	 * @param newToken current token from the regular expression
 	 */
 	private void emitToken(Token newToken) {
+		Token prevToken = null;
+		if (this.tokenArrayList.size() > 0) {
+			prevToken = this.tokenArrayList.get(this.tokenArrayList.size() - 1);
+		}// if 
+		
+		// Add implied concatenation
+		if (prevToken != null) {
+			if (newToken.type.contains("TERM") || newToken.type.contains("SYMBOL_OPEN_GROUP")) {
+				if (
+					prevToken.type.contains("TERM") 
+					|| prevToken.type.contains("SYMBOL_CLOSE_GROUP")
+					|| prevToken.type.contains("SYMBOL_KLEENE_STAR")
+					) {
+					this.tokenArrayList.add(new Token("IMPLIED_CONCATENATION", ""));
+				}// if
+			}// if
+		}// if
+		
 		this.tokenArrayList.add(newToken);
 		
 		System.out.println("[" + newToken.type +"] : [" + newToken.lexeme + "]");
