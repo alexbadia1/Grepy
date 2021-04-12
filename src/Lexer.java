@@ -3,7 +3,7 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 /**
- * lexer.java
+ * lexer.java 
  * @author Alex Badia
  * 
  * A light weight Lexer that tokenizes valid regular expressions.
