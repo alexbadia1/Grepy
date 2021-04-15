@@ -17,4 +17,14 @@ public class Token {
 		this.lexeme = newLexeme;
 		this.priority = newPriority;
 	}// constructor
+	
+	public boolean tokensAreEqual(Token token1, Token token2) {
+		if (token1.type.compareTo(token2.type) == 0) {
+			if (token1.lexeme.compareTo(token2.lexeme) == 0) {
+				return true;
+			}// if 
+		}// if
+		
+		return false;
+	}// areTokensEqual
 }// class

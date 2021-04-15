@@ -13,8 +13,8 @@ public class Grepy {
 		
 		lexer.printTokenList();
 		
-		ShuntingYardAlgorithm parser = new ShuntingYardAlgorithm();
-		parser.convertToPostFix(lexer.getTokenArrayList());
+		Parser parser = new Parser();
+		parser.parse(lexer.getTokenArrayList());
 		parser.printTokenList();
 	}// main
 }// class

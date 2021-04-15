@@ -4,12 +4,12 @@ import java.util.ArrayList;
 import java.util.EmptyStackException;
 import java.util.LinkedList;
 
-public class ShuntingYardAlgorithm {
+public class Parser {
 	private ArrayList<Token> lexTokens = new ArrayList<Token>();
-	private Queue<Token> outputQueue = new LinkedList<Token>();
+	private Queue<Token> parsedTokens = new LinkedList<Token>();
 	private Stack<Token> operatorStack = new Stack<Token>();
 	
-	public void convertToPostFix(ArrayList<Token> newTokens) {
+	public void parse(ArrayList<Token> newTokens) {
 
 		int index = 0;
 		Token currentToken = null;
@@ -21,7 +21,7 @@ public class ShuntingYardAlgorithm {
 			if (currentToken.type.matches("^TERM_ALPHABETIC$|^TERM_NUMERIC$|^TERM_UNICODE$")) {
 				
 				// Add directly to output queue
-				outputQueue.add(currentToken);
+				parsedTokens.add(currentToken);
 			}// if
 			
 			// Current token is a union symbol, kleene start or implied concatenation
@@ -40,7 +40,7 @@ public class ShuntingYardAlgorithm {
 						&& 	peekedToken.priority <= currentToken.priority) {
 						
 						// Pop operator token to output queue
-						outputQueue.add(operatorStack.pop());
+						parsedTokens.add(operatorStack.pop());
 					}// if
 					
 					else {
@@ -66,7 +66,7 @@ public class ShuntingYardAlgorithm {
 					peekedToken = operatorStack.peek();
 					
 					if (!peekedToken.type.matches("^SYMBOL_OPEN_GROUP$")) { 
-						outputQueue.add(operatorStack.pop());
+						parsedTokens.add(operatorStack.pop());
 					}// if 
 					
 					else {
@@ -90,13 +90,17 @@ public class ShuntingYardAlgorithm {
 		
 		// Pop all remaining operators in the stack
 		while (!operatorStack.isEmpty()) {
-			this.outputQueue.add(operatorStack.pop());
+			this.parsedTokens.add(operatorStack.pop());
 		}// while
 	}// convertToPostFix
 	
+	public Queue<Token> getParsedTokens() {
+		return this.parsedTokens;
+	}// getParsedTokens
+	
 	public void printTokenList() {
 		System.out.println("Parser: ");
-		for (Token token: this.outputQueue) {
+		for (Token token: this.parsedTokens) {
 			System.out.println(token.type + " ");
 		}// for
 	}// printTokenList
