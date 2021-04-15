@@ -10,5 +10,11 @@ public class Grepy {
 		System.out.println();
 		Lexer lexer = new Lexer();
 		lexer.lex(regex);
+		
+		lexer.printTokenList();
+		
+		ShuntingYardAlgorithm parser = new ShuntingYardAlgorithm();
+		parser.convertToPostFix(lexer.getTokenArrayList());
+		parser.printTokenList();
 	}// main
 }// class

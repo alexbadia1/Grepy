@@ -2,8 +2,19 @@ public class Token {
 	public String type;
 	public String lexeme;
 	
-	Token(String newType, String newLexeme) {
+	/**
+	 * Token Priority:
+	 * 
+	 * 1.) SYMBOL_KLEENE_STAR
+	 * 2.) IMPLIED_CONCATENATION
+	 * 3.) SYMBOL_UNION
+	 * 
+	 */
+	public int priority;
+	
+	Token(String newType, String newLexeme, int newPriority) {
 		this.type = newType;
 		this.lexeme = newLexeme;
+		this.priority = newPriority;
 	}// constructor
 }// class
