@@ -23,18 +23,17 @@ import java.util.regex.PatternSyntaxException;
  *  - String TERM_NUMERIC ::== 0-9
  *  - String TERM_UNICODE ::== any unicode character [see https://home.unicode.org/]
  *  - String SYMBOL_OPEN_GROUP ::== (
- *  - String SYMBOL_OPEN_GROUP ::== )
- *  - String SYMBOL_CONCATENATION ::== +
+ *  - String SYMBOL_CLOSE_GROUP ::== )
+ *  - String SYMBOL_UNION ::== +
  *  - String SYMBOL_KLEENE_STAR ::== *
+ *  - String IMPLIED_CONCATENATION
  *  
  */
 public class Lexer {
 	private String regExp;
-	private int currentIndex;
 	private ArrayList<Token> tokenArrayList;
 	
 	Lexer() {
-		this.currentIndex = 0;
 		this.tokenArrayList = new ArrayList<Token>();
 	}// constructor
 	
@@ -53,7 +52,6 @@ public class Lexer {
 	        
 	        // Regex must have compiled, emit tokens 
 	        String lexeme;
-			Boolean isValidRegEx = true;
 			Boolean acceptedRegEx = true;
 			
 			System.out.println();
@@ -61,7 +59,7 @@ public class Lexer {
 			System.out.println();
 			System.out.println("Token Stream:");
 			
-			for (int i = 0; i < this.regExp.length() && isValidRegEx; ++i) {
+			for (int i = 0; i < this.regExp.length() && acceptedRegEx; ++i) {
 				lexeme = Character.toString(this.regExp.charAt(i));
 				
 				// Backslash to escape meta characters
@@ -71,60 +69,59 @@ public class Lexer {
 					if (peekedLexeme.chars().anyMatch(c -> "\\.[]{}()*+?^$|".indexOf(c) >= 0)) {
 						// Advance lexeme
 						i++;
-						this.tokenArrayList.add(new Token("TERM", peekedLexeme));
+						this.tokenArrayList.add(new Token("TERM", peekedLexeme, -1));
 						System.out.println("TERM: " + peekedLexeme);
 					}// if
 					
 					else {
 						System.out.println("Invalid RegExp, Expected [\\\\\\\\.[]{}()*+?^$|] at pos (" + i + "), ");
-						isValidRegEx = false;
+						acceptedRegEx = false;
 					}// else
 				}// if
 				
 				// Alphabet
 				else if (Pattern.compile("^[a-z]$", Pattern.CASE_INSENSITIVE).matcher(lexeme).find()) {
-					this.emitToken(new Token("TERM_ALPHABETIC", Character.toString(lexeme.charAt(0))));
+					this.emitToken(new Token("TERM_ALPHABETIC", Character.toString(lexeme.charAt(0)), -1));
 				}// else if
 				
 				// Number
 				else if (Pattern.compile("^[0-9]$").matcher(lexeme).find()) {
-					this.emitToken(new Token("TERM_NUMERIC", Character.toString(lexeme.charAt(0))));
+					this.emitToken(new Token("TERM_NUMERIC", Character.toString(lexeme.charAt(0)), -1));
 				}// if
 				
 				// Meta-Character
 				else if (Pattern.compile("^!|@|#|%|&|-|_|~|`|,|>|<|;|:|\"|\'$").matcher(lexeme).find()) {
-					this.emitToken(new Token("TERM_METACHARACTER", Character.toString(lexeme.charAt(0))));
+					this.emitToken(new Token("TERM_METACHARACTER", Character.toString(lexeme.charAt(0)), -1));
 				}// if
 				
 				// Unicode
 				else if (Pattern.compile("[\\u0080-\\u9fff]").matcher(lexeme).find()) {
-					this.emitToken(new Token("TERM_UNICODE", Character.toString(lexeme.charAt(0))));
+					this.emitToken(new Token("TERM_UNICODE", Character.toString(lexeme.charAt(0)), -1));
 				}// else if
 				
 				// Symbols
 				else if (Pattern.compile("^\\(|\\)|\\*|\\+$").matcher(lexeme).find()) {
 					switch (this.regExp.charAt(i)) {
 						case '(':
-							this.emitToken(new Token("SYMBOL_OPEN_GROUP", Character.toString(lexeme.charAt(0))));
+							this.emitToken(new Token("SYMBOL_OPEN_GROUP", Character.toString(lexeme.charAt(0)), -1));
 							break;
 						case ')': 
-							this.emitToken(new Token("SYMBOL_CLOSE_GROUP", Character.toString(lexeme.charAt(0))));
+							this.emitToken(new Token("SYMBOL_CLOSE_GROUP", Character.toString(lexeme.charAt(0)), -1));
 							break;
 						case '*': 
-							this.emitToken(new Token("SYMBOL_KLEENE_STAR", Character.toString(lexeme.charAt(0))));
+							this.emitToken(new Token("SYMBOL_KLEENE_STAR", Character.toString(lexeme.charAt(0)), 1));
 							break;
 						case '+': 
-							this.emitToken(new Token("SYMBOL_CONCATENATION", Character.toString(lexeme.charAt(0))));
+							this.emitToken(new Token("SYMBOL_UNION", Character.toString(lexeme.charAt(0)), 3));
 							break;
 						default:
 							// This should never happen...
 							break;
 					}// switch
-				}// else
+				}// else if
 				
 				else {
 					acceptedRegEx = false;
-					isValidRegEx = false;
 				}// else
 			}// for
 			
@@ -142,13 +139,7 @@ public class Lexer {
 				return false;
 			}// if
 			
-			else if (!isValidRegEx) {
-				return false;
-			}// if
-			
-			else {
-				return true;
-			}// else
+			return true;
 	    }// try 
 		
 		// Invalid regular expression
@@ -173,6 +164,24 @@ public class Lexer {
 	 * @param newToken current token from the regular expression
 	 */
 	private void emitToken(Token newToken) {
+		Token prevToken = null;
+		if (this.tokenArrayList.size() > 0) {
+			prevToken = this.tokenArrayList.get(this.tokenArrayList.size() - 1);
+		}// if 
+		
+		// Add implied concatenation
+		if (prevToken != null) {
+			if (newToken.type.contains("TERM") || newToken.type.contains("SYMBOL_OPEN_GROUP")) {
+				if (
+					prevToken.type.contains("TERM") 
+					|| prevToken.type.contains("SYMBOL_CLOSE_GROUP")
+					|| prevToken.type.contains("SYMBOL_KLEENE_STAR")
+					) {
+					this.tokenArrayList.add(new Token("IMPLIED_CONCATENATION", "", 2));
+				}// if
+			}// if
+		}// if
+		
 		this.tokenArrayList.add(newToken);
 		
 		System.out.println("[" + newToken.type +"] : [" + newToken.lexeme + "]");
@@ -186,4 +195,10 @@ public class Lexer {
 	public ArrayList<Token> getTokenArrayList() {
 		return this.tokenArrayList;
 	}// getTokens
+	
+	public void printTokenList() {
+		for (Token token: this.getTokenArrayList()) {
+			System.out.println(token.type + " ");
+		}// for
+	}// printTokenList
 }// class

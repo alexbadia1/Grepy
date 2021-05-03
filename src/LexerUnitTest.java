@@ -15,7 +15,7 @@ class LexerUnitTest {
 	void shouldAcceptLetters() {
 		lexer.lex("abcdefghijklmnopqrstuvwxyz");
 		for (Token token : lexer.getTokenArrayList()) {
-			if (token.type != "TERM_ALPHABETIC") {
+			if (token.type != "TERM_ALPHABETIC" && token.type != "IMPLIED_CONCATENATION") {
 				fail("Lexer did not correctly tokenize input to TERM_ALPHABETIC");
 			}// if
 		}// for
@@ -25,7 +25,7 @@ class LexerUnitTest {
 	void shouldAcceptNumbers() {
 		lexer.lex("0123456789");
 		for (Token token : lexer.getTokenArrayList()) {
-			if (token.type != "TERM_NUMERIC") {
+			if (token.type != "TERM_NUMERIC" && token.type != "IMPLIED_CONCATENATION") {
 				fail("Lexer did not correctly tokenize input to TERM_NUMERIC");
 			}// if
 		}// for
@@ -37,12 +37,17 @@ class LexerUnitTest {
 		int index = 0;
 		String[] correctTokensTypes = new String[] {
 				"TERM_ALPHABETIC", // a
+				"IMPLIED_CONCATENATION",
 				"TERM_ALPHABETIC", // b
+				"IMPLIED_CONCATENATION",
 				"SYMBOL_OPEN_GROUP", // (
 				"TERM_ALPHABETIC", // c
+				"IMPLIED_CONCATENATION",
 				"TERM_ALPHABETIC", // d
+				"IMPLIED_CONCATENATION",
 				"SYMBOL_OPEN_GROUP", // (
 				"TERM_ALPHABETIC", // e
+				"IMPLIED_CONCATENATION",
 				"TERM_ALPHABETIC", // f
 				"SYMBOL_CLOSE_GROUP", // )
 				"SYMBOL_CLOSE_GROUP", // )
@@ -60,17 +65,23 @@ class LexerUnitTest {
 	
 	@Test
 	void shouldAcceptAlphaNumericWithGroupsWithKleeneStars() {
-		lexer.lex("a1(9d(e*f))*");
+		lexer.lex("a1(9d*(e*f))*");
 		int index = 0;
 		String[] correctTokensTypes = new String[] {
 				"TERM_ALPHABETIC", // a
+				"IMPLIED_CONCATENATION",
 				"TERM_NUMERIC", // 1
+				"IMPLIED_CONCATENATION",
 				"SYMBOL_OPEN_GROUP", // (
 				"TERM_NUMERIC", // 9
+				"IMPLIED_CONCATENATION",
 				"TERM_ALPHABETIC", // d
+				"SYMBOL_KLEENE_STAR", // *
+				"IMPLIED_CONCATENATION",
 				"SYMBOL_OPEN_GROUP", // (
 				"TERM_ALPHABETIC", // e
 				"SYMBOL_KLEENE_STAR", // *
+				"IMPLIED_CONCATENATION",
 				"TERM_ALPHABETIC", // f
 				"SYMBOL_CLOSE_GROUP",// )
 				"SYMBOL_CLOSE_GROUP", // )
@@ -93,15 +104,18 @@ class LexerUnitTest {
 		int index = 0;
 		String[] correctTokensTypes = new String[] {
 				"TERM_ALPHABETIC", // a
-				"SYMBOL_CONCATENATION", // +
+				"SYMBOL_UNION", // +
 				"TERM_NUMERIC", // 1
+				"IMPLIED_CONCATENATION",
 				"SYMBOL_OPEN_GROUP", // (
 				"TERM_NUMERIC", // 9
-				"SYMBOL_CONCATENATION", // +
+				"SYMBOL_UNION", // +
 				"TERM_ALPHABETIC", // d
+				"IMPLIED_CONCATENATION",
 				"SYMBOL_OPEN_GROUP", // (
 				"TERM_ALPHABETIC", // e
 				"SYMBOL_KLEENE_STAR", // *
+				"IMPLIED_CONCATENATION",
 				"TERM_ALPHABETIC", // f
 				"SYMBOL_CLOSE_GROUP",// )
 				"SYMBOL_CLOSE_GROUP", // )
@@ -123,16 +137,19 @@ class LexerUnitTest {
 		lexer.lex("\u00D8+1(9+d(\u00B1*f))*");
 		int index = 0;
 		String[] correctTokensTypes = new String[] {
-				"TERM_UNICODE", // a
-				"SYMBOL_CONCATENATION", // +
+				"TERM_UNICODE", // unicode character
+				"SYMBOL_UNION", // +
 				"TERM_NUMERIC", // 1
+				"IMPLIED_CONCATENATION",
 				"SYMBOL_OPEN_GROUP", // (
 				"TERM_NUMERIC", // 9
-				"SYMBOL_CONCATENATION", // +
+				"SYMBOL_UNION", // +
 				"TERM_ALPHABETIC", // d
+				"IMPLIED_CONCATENATION",
 				"SYMBOL_OPEN_GROUP", // (
 				"TERM_UNICODE", // ±
 				"SYMBOL_KLEENE_STAR", // *
+				"IMPLIED_CONCATENATION",
 				"TERM_ALPHABETIC", // f
 				"SYMBOL_CLOSE_GROUP",// )
 				"SYMBOL_CLOSE_GROUP", // )
