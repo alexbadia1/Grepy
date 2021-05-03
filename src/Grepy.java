@@ -13,8 +13,14 @@ public class Grepy {
 		
 		lexer.printTokenList();
 		
+		// Parse tokens 
 		Parser parser = new Parser();
 		parser.parse(lexer.getTokenArrayList());
 		parser.printTokenList();
+		
+		// Create the NFA using Thompson Construction
+		ThompsonConstruction thompsonConstructor = new ThompsonConstruction(parser.getParsedTokens());
+		NFA nfa = thompsonConstructor.thompsonConstruction();
+		System.out.println(nfa.toString());
 	}// main
 }// class
