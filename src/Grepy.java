@@ -28,7 +28,7 @@ public class Grepy {
 			System.out.print("Test: ");
 			String test = scanner.nextLine();
 			System.out.println();
-			System.out.println(nfa.accepts(test));
+//			System.out.println(nfa.accepts(test));
 		}// while
 	}// main
 }// class
