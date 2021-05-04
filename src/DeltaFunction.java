@@ -1,11 +1,11 @@
 import java.util.ArrayList;
 
-public class Delta {
+public class DeltaFunction {
 	private State startingState = null;
 	private String transitionSymbol = "[Insert Transition]";
 	private ArrayList<State> endingStates = new ArrayList<State>();
 	
-	Delta(State startingState, String transitionSymbol, ArrayList<State> endingStates) {
+	DeltaFunction(State startingState, String transitionSymbol, ArrayList<State> endingStates) {
 		this.startingState = startingState;
 		this.transitionSymbol = transitionSymbol;
 		this.endingStates = endingStates;

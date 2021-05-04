@@ -10,7 +10,6 @@ public class Grepy {
 		System.out.println();
 		Lexer lexer = new Lexer();
 		lexer.lex(regex);
-		
 		lexer.printTokenList();
 		
 		// Parse tokens 
@@ -21,6 +20,15 @@ public class Grepy {
 		// Create the NFA using Thompson Construction
 		ThompsonConstruction thompsonConstructor = new ThompsonConstruction(parser.getParsedTokens());
 		NFA nfa = thompsonConstructor.thompsonConstruction();
-		System.out.println(nfa.toString());
+		nfa.toString();
+		nfa.toGraph();
+		
+		// Keep testing
+		while (true) {
+			System.out.print("Test: ");
+			String test = scanner.nextLine();
+			System.out.println();
+			System.out.println(nfa.accepts(test));
+		}// while
 	}// main
 }// class
