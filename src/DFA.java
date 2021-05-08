@@ -48,12 +48,22 @@ public class DFA {
 	}// useStateId
 
 	public String toString() {
+		// Print out the all states
 		String states = "{";
+		int count = 0;
 		for (State state: this.states.values()) {
-			states += state.name  + ", ";
+			if (count < this.states.values().size() - 1) {
+				states += state.name  + ", ";
+			}// if
+			
+			else {
+				states += state.name;
+			}// else
+			count++;
 		}// for
 		states += "}";
 		
+		// Print out deltas
 		String deltas = "{\n\t";
 		for (DFADeltaFunction delta: this.transitions) {
 			String endState = "{ " + String.valueOf(this.states.get(delta.getOutputState()).name)  + " }";
@@ -64,13 +74,21 @@ public class DFA {
 		}// for
 		deltas += "}\n";
 		
+		// Print out the accepted states
 		String acceptingStates = "{";
+		int acceptCount = 0;
 		for (HashSet<State> acceptStateKey: this.acceptingStateKeys) {
-			acceptingStates += String.valueOf(this.states.get(acceptStateKey).name)  + ", ";
+			if (acceptCount < this.acceptingStateKeys.size() - 1) {
+				acceptingStates += String.valueOf(this.states.get(acceptStateKey).name)  + ", ";
+			}// if
+			else {
+				acceptingStates += String.valueOf(this.states.get(acceptStateKey).name);
+			}// else
+			acceptCount++;
 		}// for
 		acceptingStates += "}";
 		
-		String ans = "";
+		String ans = "\n\n";
 		ans += "DFA: \n"; 
 		ans += "Start State = " + String.valueOf(this.states.get(this.startingStateKey).name) + "\n";
 		ans += "States = " + states + "\n";

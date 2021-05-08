@@ -8,11 +8,13 @@ public class Grepy {
 		
 		String regex = scanner.nextLine();
 		System.out.println();
+		
+		// Lex regular expression into tokens
 		Lexer lexer = new Lexer();
 		lexer.lex(regex);
 		lexer.printTokenList();
 		
-		// Parse tokens 
+		// Parse tokens to take into account precedence 
 		Parser parser = new Parser();
 		parser.parse(lexer.getTokenArrayList());
 		parser.printTokenList();
@@ -23,6 +25,7 @@ public class Grepy {
 		nfa.toString();
 		nfa.toGraph();
 		
+		// Convert NFA to DFA using subset/powerset construction
 		SubsetConstruction s = new SubsetConstruction(nfa);
 		s.subsetConstruction();
 		System.out.println(s.getDfa().toString());

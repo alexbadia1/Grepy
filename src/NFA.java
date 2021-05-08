@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -27,8 +28,15 @@ import com.mxgraph.view.mxStylesheet;
 public class NFA {
 	public State startState = null;
 	public ArrayList<State> states = new ArrayList<State>();
-	public ArrayList<DeltaFunction> transitions = new ArrayList<DeltaFunction>();
+	public ArrayList<NFADeltaFunction> transitions = new ArrayList<NFADeltaFunction>();
 	private int id = -1;
+	
+	/**
+	 * Alphabet read in from the input file
+	 */
+	private String[] alphabet = {"a", "b", "c", "d"};
+	
+	
 	private Graph<String, DefaultEdge> graph = new DirectedPseudograph<>(LabeledDefaultEdge.class);
 	
 	/**
@@ -39,16 +47,24 @@ public class NFA {
 	 */
 	public State acceptingState = null;
 	
-	public NFA(State startState, ArrayList<State> states, ArrayList<DeltaFunction> transitions, State acceptingState, int id) {
+	public NFA(State startState, 
+			ArrayList<State> states, 
+			ArrayList<NFADeltaFunction> transitions, 
+			State acceptingState, 
+			int id,
+			String[] alphabet) {
 		super();
 		this.startState = startState;
 		this.states = states;
 		this.transitions = transitions;
 		this.acceptingState = acceptingState;
 		this.id = id;
+		this.alphabet = alphabet;
 	}// constructor
 	
-
+	public String[] getAlphabet() {
+		return this.alphabet;
+	}// getAlphabet
 	
 	public void toGraph() {
 		// New graph for NFA
@@ -66,7 +82,7 @@ public class NFA {
 		this.graph.addEdge("start", String.valueOf(this.startState.name), new LabeledDefaultEdge(""));
 		
 		// Add edges using delta functions
-		for(DeltaFunction deltaFunction: this.transitions) {
+		for(NFADeltaFunction deltaFunction: this.transitions) {
 			for (State endState: deltaFunction.getEndingStates()) {
 				this.graph.addEdge(
 						String.valueOf(deltaFunction.getStartingState().name), // Input state
@@ -174,6 +190,16 @@ public class NFA {
             // Set new geometry of cells
         	cells.forEach((s, c) ->{
             	c.setGeometry(new mxGeometry(0.0, 0.0, 55.0, 55.0));
+            	
+            	// Remove outline for starting node
+            	if (s.equals("start")) {
+            		c.setStyle("strokeColor=#FFFFFF");
+            	}// if
+            	
+            	// Highlight (well, actually grey out), accepted nodes
+            	else if (String.valueOf(this.acceptingState.name).equals(s)) {
+            		c.setStyle("fillColor=#808080");
+            	}// if
             });
         	
             layout.execute(graphAdapter.getDefaultParent());
@@ -188,33 +214,34 @@ public class NFA {
         }// catch
 	}// toGraph
 	
+	
+	/**
+	 * Shows the NFA 5 Tuple to standard output.
+	 */
 	public String toString() {
-		String states = "{";
-		for (State state: this.states) {
-			states += state.name  + ", ";
+		String statesToString = "{";
+		for (int i = 0; i < this.states.size(); ++i) {
+			if (i < this.states.size() - 1) {
+				statesToString += this.states.get(i).name  + ", ";
+			}// if
+			
+			else {
+				statesToString += this.states.get(i).name;
+			}// else
 		}// for
-		states += "}";
+		statesToString += "}";
 		
-		String deltas = "{\n\t";
-		for (DeltaFunction delta: this.transitions) {
-			String endStates = "{ ";
-			for (State deltaState: delta.getEndingStates()) {
-				endStates += deltaState.name  + " ";
-			}// for
-			endStates += "}";
-			deltas += "";
-			
-			
-			deltas += "Delta(" + String.valueOf(delta.getStartingState().name) + ", " 
-					+ delta.getTransitionSymbol() + ") = " 
-					+ endStates + "\n\t";
+		String deltas = "{\n";
+		for (NFADeltaFunction delta: this.transitions) {
+			deltas += "   " + delta.toString() + "\n";
 		}// for
 		deltas += "}\n";
 		
-		String ans = "";
+		String ans = "\n\n";
 		ans += "NFA: \n"; 
 		ans += "Start State = " + String.valueOf(this.startState.name) + "\n";
-		ans += "States = " + states + "\n";
+		ans += "States = " + statesToString + "\n";
+		ans += "Alphabet = " + Arrays.toString(this.alphabet) + "\n";
 		ans += "Transitions = " + deltas;
 		ans += "Accepting State = " + String.valueOf(this.acceptingState.name);
 		

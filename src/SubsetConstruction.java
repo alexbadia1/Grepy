@@ -54,7 +54,7 @@ public class SubsetConstruction {
 			for (State state: currState) {
 				System.out.println("    Delta(" + String.valueOf(state.name) + ", " + symbol +  ")");
 				
-				DeltaFunction df = this.searchForDeltaFunction(state, symbol);
+				NFADeltaFunction df = this.searchForDeltaFunction(state, symbol);
 				if (df != null) {
 					for(State deltaEndState: df.getEndingStates()) {
 						newDfaState.add(deltaEndState);
@@ -121,7 +121,7 @@ public class SubsetConstruction {
 	private HashSet<State> epsilonClosure(State currentState, HashSet<State> epsilonClosure) {
 		epsilonClosure.add(currentState);
 		
-		for(DeltaFunction transition: this.nfa.transitions) {
+		for(NFADeltaFunction transition: this.nfa.transitions) {
 			
 			if(transition.getStartingState().name == currentState.name 
 					&& transition.getTransitionSymbol().equals("?")) {
@@ -134,8 +134,8 @@ public class SubsetConstruction {
 		return epsilonClosure;
 	}// epsilonClosure
 	
-	private DeltaFunction searchForDeltaFunction(State inputState, String inputSymbol) {
-		for (DeltaFunction df: this.nfa.transitions) {
+	private NFADeltaFunction searchForDeltaFunction(State inputState, String inputSymbol) {
+		for (NFADeltaFunction df: this.nfa.transitions) {
 			if (df.getStartingState().name == inputState.name 
 				&& df.getTransitionSymbol().equals(inputSymbol)) {
 				return df;
