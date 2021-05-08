@@ -23,12 +23,16 @@ public class Grepy {
 		nfa.toString();
 		nfa.toGraph();
 		
+		SubsetConstruction s = new SubsetConstruction(nfa);
+		s.subsetConstruction();
+		System.out.println(s.getDfa().toString());
+		
 		// Keep testing
-		while (true) {
-			System.out.print("Test: ");
-			String test = scanner.nextLine();
-			System.out.println();
-//			System.out.println(nfa.accepts(test));
-		}// while
+//		while (true) {
+//			System.out.print("Test: ");
+//			String test = scanner.nextLine();
+//			System.out.println();
+////			System.out.println(nfa.accepts(test));
+//		}// while
 	}// main
 }// class

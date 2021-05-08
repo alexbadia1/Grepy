@@ -2,6 +2,7 @@ import java.util.ArrayList;
 
 public class State {
 	public int name = 0;
+	public String nickName = "[nickname]";
 	public boolean isStart = false;
 	public boolean isAccepting = false;
 	public ArrayList<State> children = new ArrayList<State>();
