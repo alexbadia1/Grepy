@@ -62,6 +62,10 @@ public class NFA {
 		this.alphabet = alphabet;
 	}// constructor
 	
+	public int getNfaId() {
+		return this.id;
+	}// getNfaId
+	
 	public String[] getAlphabet() {
 		return this.alphabet;
 	}// getAlphabet

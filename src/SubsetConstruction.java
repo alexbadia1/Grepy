@@ -5,12 +5,12 @@ public class SubsetConstruction {
 	private NFA nfa;
 	private DFA dfa;
 	private Hashtable<State, HashSet<State>> eClosureTable;
-	private String[] alphabet = {"a", "b", "c"};
+	private String[] alphabet = {"a", "b", "c", "d", "e", "f", "g", "h"};
 	
 	public SubsetConstruction(NFA nfa) {
 		super();
 		this.nfa = nfa;
-		this.dfa = new DFA();
+		this.dfa = new DFA(nfa.getNfaId());
 		this.eClosureTable = new Hashtable<State, HashSet<State>>();
 	}// constructor
 	
@@ -144,13 +144,4 @@ public class SubsetConstruction {
 		
 		return null;
 	}// searchForDeltaFunction
-	
-	private String convertToName(HashSet<State> states) {
-		String name = "";
-		for(State s: states) {
-			name += "q" + s.name;
-		}// for
-		
-		return name;
-	}// convertStatesToName
 }// class
