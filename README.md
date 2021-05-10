@@ -11,7 +11,7 @@ A version of the grep utility, in Java, that searches files for regular expressi
   
 ### Prerequisites
 
-This project requires the installation of the JDK.
+This project requires the installation of the JDK 12.0.5 (SE is included in JDK).
 
 Outlining the docs, follow these steps for Windows:
 
