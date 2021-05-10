@@ -20,7 +20,7 @@ public class DFA extends FiniteAutomata {
 				alphabet, 
 				new ArrayList<State>(), 
 				new ArrayList<DeltaFunction>(), 
-				new ArrayList<State>(), id);
+				new ArrayList<State>(), id, "DFA");
 		this.stateId = 0;
 		this.subsetStateMap = new Hashtable<HashSet<State>, State>();
 		this.startingStateKey = new HashSet<State>();

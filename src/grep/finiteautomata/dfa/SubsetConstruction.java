@@ -1,7 +1,9 @@
 package grep.finiteautomata.dfa;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Hashtable;
 
+import grep.Util;
 import grep.finiteautomata.DeltaFunction;
 import grep.finiteautomata.nfa.NFA;
 import grep.finiteautomata.nfa.NFADeltaFunction;
@@ -11,13 +13,11 @@ import grep.finiteautomata.states.State;
 public class SubsetConstruction {
 	private NFA nfa;
 	private DFA dfa;
-	private Hashtable<State, HashSet<State>> eClosureTable;
 	
 	public SubsetConstruction(NFA nfa) {
 		super();
 		this.nfa = nfa;
 		this.dfa = new DFA(nfa.getSigma(), nfa.getId());
-		this.eClosureTable = new Hashtable<State, HashSet<State>>();
 	}// constructor
 	
 	public NFA getNfa() {
@@ -29,26 +29,23 @@ public class SubsetConstruction {
 	}// getDfa
 	
 	public void subsetConstruction() {
-		// Calculate the epsilon enclosure for every state in the NFA, for later use
-		System.out.println("Calculating e-closure for all nfa states: " + this.nfa.getSigma());
-		for(State s: this.nfa.getStates()) {
-			HashSet<State> eClosure = this.epsilonClosure(s, new HashSet<State>());
-			if(!this.eClosureTable.containsKey(s)) {
-				this.eClosureTable.put(s, eClosure);
-			}// if
-		}// for
-		System.out.println(this.eClosureTable.toString());
-		
+		System.out.println("\n\n\n" + Util.divider);
+		System.out.println("Performing Powerset/Subset Construction...");
+		System.out.println(Util.divider);
+
 		// Let epsilon-closure(nfa.start_state) be the starting DFA state
 		//
 		// Begin subset construction from the nfa's starting node
-		this.subsetConstruction(this.eClosureTable.get(this.nfa.getStartState()), true);
+		this.subsetConstruction(this.epsilonClosure(this.nfa.getStartState(), new HashSet<State>()), true);
+		
+		// Thompson construction makes it so that the DFA will only have one trap state when converted to an DFA
+		this.insertTrapState();
 	}// subsetConstruction
 	
 	private void subsetConstruction(HashSet<State> currState, boolean isDfaStartingState) {
 		// For every symbol in the alphabet perform the delta function
 		for (String symbol: nfa.getSigma()) {
-			System.out.print("\nPerforming Delta'({ ");
+			System.out.print("Performing Delta'({ ");
 			for (State currS: currState) {
 				System.out.print(String.valueOf(currS.name) + " ");
 			}// for
@@ -93,7 +90,7 @@ public class SubsetConstruction {
 			for (State s: eClosureOfNewDfaState) {
 				System.out.print(String.valueOf(s.name) + " ");
 			}// for
-			System.out.println("}");
+			System.out.println("}\n\n");
 						
 			// Add to hash table of DFA states if it already doesn't exist
 			if (!eClosureOfNewDfaState.isEmpty()) {
@@ -105,9 +102,14 @@ public class SubsetConstruction {
 						this.dfa.subsetStateMap.put(currState, singleStartState);
 						this.dfa.setStartingStateKey(currState);
 						
-						System.out.print("\n\n\nAssigning Start State: " + String.valueOf(singleStartState.name) + "\n\n\n");
 						this.dfa.setStartState(singleStartState);
 						this.dfa.addState(singleStartState);
+						
+						// If the Start State is an accepting state
+						if(this.nfa.getStartState().isAccepting) {
+							this.dfa.addAcceptingStateKeys(currState);
+							this.dfa.addAcceptedStates(singleStartState);
+						}// if
 						
 						isDfaStartingState = false;
 					}// if
@@ -123,6 +125,7 @@ public class SubsetConstruction {
 					
 					// Sets DFA Accepting State(s)
 					setAcceptingStates: for (State eCloseState: eClosureOfNewDfaState) {
+						System.out.println();
 						if(eCloseState.isAccepting) {
 							this.dfa.addAcceptingStateKeys(eClosureOfNewDfaState);
 							this.dfa.addAcceptedStates(singleEClosureOfNewDfaState);
@@ -170,4 +173,34 @@ public class SubsetConstruction {
 		
 		return null;
 	}// searchForDeltaFunction
+	
+	private void insertTrapState() {
+		State trapState = new State(this.dfa.useStateId());
+		
+		for (State s: this.dfa.getStates()) {
+			ArrayList<String> usedLetters = new ArrayList<String>();
+			
+			// Keep track of what letter the state uses
+			for (DeltaFunction df: this.dfa.getDelta()) {
+				if (s.name == df.getStartingState().name) {
+					usedLetters.add(df.getTransitionSymbol());
+				}// if
+			}// for
+			
+			for(String l: this.dfa.getSigma()) {
+				// Add transitions to trap state on letters the current DFA state doesn't use.
+				if(!usedLetters.contains(l)) {
+					this.dfa.addDelta(new DFADeltaFunction(s, l, trapState));
+				}// if
+			}// for
+		}// for
+		
+		for(String l: this.dfa.getSigma()) {
+	
+			// While we're at it, make the trap state loop back to itself
+			this.dfa.addDelta(new DFADeltaFunction(trapState, l, trapState));
+		}// for
+		
+		this.dfa.addState(trapState);
+	}// insertTrapState
 }// class

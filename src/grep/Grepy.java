@@ -1,7 +1,11 @@
 package grep;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Scanner;
+import java.util.regex.Pattern;
 
 import grep.finiteautomata.dfa.SubsetConstruction;
 import grep.finiteautomata.nfa.NFA;
@@ -12,29 +16,37 @@ import grep.stackmachine.StackMachine;
 
 public class Grepy {
 	public static void main (String[] args) {
-		Arrays.toString(args);
+		System.out.println("Grepy read: " + Arrays.toString(args).replace("[", "").replace("]", "").replace(",", "") + "\n");
 		
-		String nfaFilename = "nfa";
-		String dfaFilename = "dfa";
-		String testFilename = "test";
+		// Check for valid input
+		InputFilter input = new InputFilter(args);
 		
-		Scanner scanner = new Scanner(System.in);
+		if(!input.isValid()) {
+			System.out.println("Info: Args follow: [-n nfa-filename] [-d dfa-filename] regex [test-filename]");
+			return;
+		}// if
 		
-		System.out.print("Regular Expression: ");
+		// Learn alphabet
+		ArrayList<String> alphabet = learnAlphabet(input.getTestFilename());
 		
-		String regex = scanner.nextLine();
-		System.out.println();
-		
-		ArrayList<String> sigma = new ArrayList<String>();
-		
-		for (int i = 97; i < 100; ++i) {
-			sigma.add(Character.toString(i));
+		for(String letter: input.getRegex().split("")) {
+			if (!Pattern.compile("^\\(|\\)|\\*|\\+$").matcher(letter).find()) {
+				if(!alphabet.contains(letter)) {
+					alphabet.add(letter);
+				}// if
+			}// if
 		}// for
+		
+		System.out.println("Final Sigma: " + alphabet);
+		
+		// Fail if not test file was given
+		if (alphabet == null) {
+			return;
+		}// if
 		
 		// Lex regular expression into tokens
 		Lexer lexer = new Lexer();
-		lexer.lex(regex);
-		lexer.printTokenList();
+		lexer.lex(input.getRegex());
 		
 		// Parse tokens to take into account precedence 
 		Parser parser = new Parser();
@@ -42,27 +54,68 @@ public class Grepy {
 		parser.printTokenList();
 		
 		// Create the NFA using Thompson Construction
-		ThompsonConstruction thompsonConstructor = new ThompsonConstruction(parser.getParsedTokens(), sigma);
+		ThompsonConstruction thompsonConstructor = new ThompsonConstruction(parser.getParsedTokens(), alphabet);
 		NFA nfa = thompsonConstructor.thompsonConstruction();
+		System.out.println("\n\n\n" + Util.divider);
+		System.out.println("Thompson Construction Resulting NFA: ");
+		System.out.println(Util.divider);
 		nfa.toString();
+		
+		// Export NFA as DOT and PNG files
 		nfa.toGraph();
+		nfa.export(input.getNfaFilename());
 		
 		// Convert NFA to DFA using subset/powerset construction
 		SubsetConstruction s = new SubsetConstruction(nfa);
 		s.subsetConstruction();
-		System.out.print("Final DFA: ");
+		System.out.println(Util.divider);
+		System.out.println("Powerset/Subset Construction Resulting DFA: ");
+		System.out.println(Util.divider);
 		s.getDfa().toString();
+		
+		// Export DFA as DOT and PNG files
 		s.getDfa().toGraph();
-		s.getDfa().export(nfaFilename);
+		s.getDfa().export(input.getDfaFilename());
 		
 		
-		StackMachine m = new StackMachine(s.getDfa());
-		// Keep testing
-		while (true) {
-			System.out.print("Test: ");
-			String test = scanner.nextLine();
-			System.out.println();
-			m.test(test);
-		}// while
+		StackMachine stackMachine = new StackMachine(s.getDfa());
+		System.out.println("\n\n\n" + Util.divider);
+		System.out.println("Stack Machine Testing:\n");
+		System.out.println("  Regex: " + input.getRegex() + "\n");
+		System.out.println("  Input: " + input.getTestFilename() + ".txt\n");
+		System.out.println(Util.divider);
+		stackMachine.test(input.getTestFilename());
+		System.out.println(Util.divider);
 	}// main
+	
+	private static ArrayList<String> learnAlphabet(String textFilename) {
+		try {
+			HashSet<String> uniqueAlhpabet = new HashSet<String>();
+			ArrayList<String> sigma = new ArrayList<String>();
+			
+			String text = "";
+			File testFile = new File(textFilename + ".txt");
+			Scanner scanner = new Scanner(testFile);
+			while (scanner.hasNextLine()) {
+				text += scanner.nextLine().replace(" ", "");
+			}// while
+			
+			for (String letter: text.split("")) {
+				uniqueAlhpabet.add(letter);
+			}// for
+			
+			scanner.close();
+			
+			for (String symbol: uniqueAlhpabet) {
+				sigma.add(symbol);
+			}// for
+			
+			return sigma;
+		}// try
+		
+		catch (FileNotFoundException e) {
+			System.out.println("Error: Could not input file '" + textFilename + "'.");
+			return null;
+		}// catch
+	}// learnAlphabet
 }// class

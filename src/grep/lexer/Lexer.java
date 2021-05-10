@@ -3,6 +3,8 @@ import java.util.ArrayList;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import grep.Util;
+
 /**
  * lexer.java 
  * @author Alex Badia
@@ -57,8 +59,9 @@ public class Lexer {
 			
 			System.out.println();
 			System.out.println("Grepy read: " + this.regExp);
-			System.out.println();
+			System.out.println("\n" + Util.divider);
 			System.out.println("Token Stream:");
+			System.out.println(Util.divider);
 			
 			for (int i = 0; i < this.regExp.length() && acceptedRegEx; ++i) {
 				lexeme = Character.toString(this.regExp.charAt(i));
@@ -185,7 +188,7 @@ public class Lexer {
 		
 		this.tokenArrayList.add(newToken);
 		
-		System.out.println("[" + newToken.type +"] : [" + newToken.lexeme + "]");
+		System.out.println("  [" + newToken.type +"] : [" + newToken.lexeme + "]");
 	}// emitToken
 
 	/**
@@ -199,7 +202,7 @@ public class Lexer {
 	
 	public void printTokenList() {
 		for (Token token: this.getTokenArrayList()) {
-			System.out.println(token.type + " ");
+			System.out.println("  " + token.type);
 		}// for
 	}// printTokenList
 }// class
