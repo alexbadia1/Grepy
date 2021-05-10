@@ -40,13 +40,18 @@ public class Grepy {
 		// Create the NFA using Thompson Construction
 		ThompsonConstruction thompsonConstructor = new ThompsonConstruction(parser.getParsedTokens(), alphabet);
 		NFA nfa = thompsonConstructor.thompsonConstruction();
+		System.out.println("\n\n\n" + Util.divider);
+		System.out.println("Thompson Construction Resulting NFA: ");
+		System.out.println(Util.divider);
 		nfa.toString();
 		nfa.toGraph();
 		
 		// Convert NFA to DFA using subset/powerset construction
 		SubsetConstruction s = new SubsetConstruction(nfa);
 		s.subsetConstruction();
-		System.out.print("Final DFA: ");
+		System.out.println(Util.divider);
+		System.out.println("Powerset/Subset Construction Resulting DFA: ");
+		System.out.println(Util.divider);
 		s.getDfa().toString();
 		s.getDfa().toGraph();
 		s.getDfa().export(input.getNfaFilename());

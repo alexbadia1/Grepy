@@ -3,6 +3,7 @@ import java.util.ArrayList;
 import java.util.Queue;
 import java.util.Stack;
 
+import grep.Util;
 import grep.finiteautomata.DeltaFunction;
 import grep.finiteautomata.states.AcceptedState;
 import grep.finiteautomata.states.StartState;
@@ -54,27 +55,26 @@ public class ThompsonConstruction {
 	 * on already existing atomic NFA's such as kleene star, concatenation, or union.
 	 */
 	public NFA thompsonConstruction() {
-		System.out.println("\n\nThompson Constuction:\n\n");
+		System.out.println("\n\n\n" + Util.divider);
+		System.out.println("NFA by Thompson Construction...");
+		System.out.println(Util.divider);
 		while (!tokens.isEmpty()) {
 			Token currentToken = tokens.remove();
+			System.out.print("\n\n[" + currentToken.type + "] : [" + currentToken.lexeme+ "] ");
 			switch(currentToken.type) {
 				case "TERM_METACHARACTER": 
 				case "TERM_UNICODE":
 				case "TERM_NUMERIC":
 				case "TERM_ALPHABETIC":
-					System.out.println("\nFound: " + currentToken.type + "\n");
 					this.term(currentToken);
 					break;
 				case "SYMBOL_KLEENE_STAR":
-					System.out.println("\nFound: " + currentToken.type + "\n");
 					this.kleeneStar();
 					break;
 				case "IMPLIED_CONCATENATION":
-					System.out.println("\nFound: " + currentToken.type + "\n");
 					this.concatenation();
 					break;
 				case "SYMBOL_UNION":
-					System.out.println("\nFound: " + currentToken.type + "\n");
 					this.union();
 					break;
 				default:
@@ -89,7 +89,8 @@ public class ThompsonConstruction {
 	 * Creates an Atomic NFA that accepts a single term
 	 */
 	private void term(Token newToken) {
-		System.out.println("\n\nGenerating Symbol NFA...\n");
+		System.out.println("Atomic NFA for Symbol: ");
+		System.out.println(Util.divider);
 		
 		// Start
 		State start = new StartState(this.stateId++);
@@ -111,7 +112,6 @@ public class ThompsonConstruction {
 		// Create NFA and push onto stack
 		NFA newNFA = new NFA(states, this.alphabet, start, transitions, accept, nfaId++);
 		
-		System.out.println("Atomic Symbol NFA for: " + newToken.lexeme + "\n");
 		newNFA.toString();
 		this.nfaStack.push(newNFA);
 	}// generateNfaForTerm
@@ -120,7 +120,8 @@ public class ThompsonConstruction {
 	 * Unions two Atomic NFA's
 	 */
 	private void union() {
-		System.out.println("Performing Union");
+		System.out.println("Unioning 2 NFAs: ");
+		System.out.println(Util.divider);
 		
 		// 1.) Get the two NFA's off the stack and effectively 
 		// throw away by not returning them to the stack.
@@ -180,15 +181,19 @@ public class ThompsonConstruction {
 		newTransitions.add(new NFADeltaFunction(nfa1.getAccepetedState(), "?", newEndDeltaEndStates));
 		newTransitions.add(new NFADeltaFunction(nfa2.getAccepetedState(), "?", newEndDeltaEndStates));
 		
+		NFA newNfa = new NFA(newStates, this.alphabet, newStart, newTransitions, newAccept, nfaId++);
+		newNfa.toString();
+		
 		// Create new NFA and push onto stack
-		 this.nfaStack.push(new NFA(newStates, this.alphabet, newStart, newTransitions, newAccept, nfaId++));
+		 this.nfaStack.push(newNfa);
 	}// union
 	
 	/**
 	 * Concatenates two Atomic NFA's
 	 */
 	private void concatenation() {
-		System.out.println("Performing Concatenation");
+		System.out.println("Concatenating 2 NFAs: ");
+		System.out.println(Util.divider);
 		
 		// 1.) Get the two NFA's off the stack and effectively 
 		// throw away by not returning them to the stack.
@@ -225,7 +230,7 @@ public class ThompsonConstruction {
 		newTransitions.add(new NFADeltaFunction(nfa1.getAccepetedState(), "?", newStartDeltaEndStates));
 		
 		NFA newNFA = new NFA(newStates, this.alphabet, nfa1.getStartState(), newTransitions, nfa2.getAccepetedState(), nfaId++);
-		System.out.println("Concatenation: \n" + newNFA.toString());
+		newNFA.toString();
 		
 		// 4.) Create new NFA and push onto stack
 		 this.nfaStack.push(newNFA);
@@ -235,7 +240,8 @@ public class ThompsonConstruction {
 	 * Applies a kleene star operation to the NFA
 	 */
 	private void kleeneStar() {
-		System.out.println("Performing Kleen Star");
+		System.out.println("Kleene Staring NFA: ");
+		System.out.println(Util.divider);
 		
 		// 1.) Get one NFA off the stack and effectively 
 		// throw away by not returning it to the stack.
@@ -286,7 +292,9 @@ public class ThompsonConstruction {
 		
 		// Create new NFA and push onto stack
 		NFA newNFA = new NFA(newStates, this.alphabet, newStart, newTransitions, newAccept, nfaId++);
-		System.out.println("Kleene Star: \n" + newNFA.toString());
+		newNFA.toString();
+		
+		// Push nfa back on stack
 		this.nfaStack.push(newNFA);
 	}// kleeneStar
 }// class

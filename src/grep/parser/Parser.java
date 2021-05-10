@@ -1,6 +1,7 @@
 package grep.parser;
 import java.util.Stack;
 
+import grep.Util;
 import grep.lexer.Token;
 
 import java.util.Queue;
@@ -102,8 +103,9 @@ public class Parser {
 	}// getParsedTokens
 	
 	public void printTokenList() {
-		System.out.println("\nParse: Post-Fix Order");
-		System.out.println("-------------------------");
+		System.out.println("\n" + Util.divider);
+		System.out.println("Parse: Post-Fix Order");
+		System.out.println(Util.divider);
 		for (Token token: this.parsedTokens) {
 			System.out.println("  " + token.type);
 		}// for

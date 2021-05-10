@@ -144,7 +144,6 @@ public class FiniteAutomata {
 		}// for
 		
 		// Edge for start -> startingState
-		System.out.println(this.startStates.get(0).name);
 		this.graph.addEdge("start", String.valueOf(this.startStates.get(0).name), new LabeledDefaultEdge("", "", ""));
 		
 		// Add edges using delta functions
@@ -169,7 +168,6 @@ public class FiniteAutomata {
 				else {
 					LabeledDefaultEdge edgeLabel = new LabeledDefaultEdge(trans.transitionSymbol,startStateName, endStateName);
 					
-					System.out.println(startStateName + " " + endStateName);
 					this.graph.addEdge(startStateName, endStateName, edgeLabel);
 					edgeLabels.add(edgeLabel);
 				}// else
@@ -346,7 +344,7 @@ public class FiniteAutomata {
 	}// statesToString
 	
 	public String toString() {
-		String ans = "\n\n";
+		String ans = "";
 		ans += this.type + ": \n"; 
 		ans += "States = " + this.statesToString(this.states) + "\n";
 		ans += "Alphabet = " + Arrays.toString(this.sigma.toArray()) + "\n";
