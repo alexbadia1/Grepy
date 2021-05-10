@@ -168,7 +168,6 @@ public class FiniteAutomata {
 					
 					// Remove existing edge before adding new edge
 					this.graph.removeEdge(startStateName, endStateName);
-					System.out.println("Added Egde: <s>" + startStateName + " <d>" + endStateName + " label " + edgeCopy.toString());
 					this.graph.addEdge(startStateName, endStateName, edgeCopy);
 				}// if
 				
