@@ -4,13 +4,16 @@ import grep.finiteautomata.dfa.DFA;
 import grep.finiteautomata.dfa.DFADeltaFunction;
 import grep.finiteautomata.states.State;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.Scanner;
 import java.util.Stack;
 
 public class StackMachine {
-
 	private DFA dfa;
-	
 	/**
 	 * Since this stack machine is made from a DFA
 	 * In theory, there should never be a duplicate Read+Pop
@@ -48,14 +51,31 @@ public class StackMachine {
 		this.stack.push(this.dfa.getStartingState());
 	}// resetStack
 	
-	public void test(String input) {
+	public void test(String textFilename) {
+		try {
+			File testFile = new File(textFilename + ".txt");
+			Scanner scanner = new Scanner(testFile);
+			while (scanner.hasNextLine()) {
+				String scannerText = scanner.nextLine().replace(" ", "");
+				
+				// Test Each line
+				if (this.test(scannerText, 0)) {
+					System.out.println("Passed: [" + scannerText + "]");
+				}// if
+				
+				else {
+					System.out.println("Failed: [" + scannerText + "]");
+				}// else
+				
+				// Reset Stack
+				this.resetStack();
+			}// while
+		}// try
 		
-		// Test
-		this.test(input, 0);
-		
-		// Reset Stack
-		this.resetStack();
-	}// testHelper
+		catch (FileNotFoundException e) {
+			System.out.println("Error: Could not input file '" + textFilename + "'.");
+		}// catch
+	}// test
 	
 	private boolean test(String input, int pos) {
 		if (pos > input.length() - 1) {
@@ -101,7 +121,7 @@ public class StackMachine {
 			this.stack.push(push);
 			
 			// Recursively do this
-			this.test(input, pos);
+			return this.test(input, pos);
 		}// try
 		catch (Exception e) {
 			// Still characters, but empty stack
@@ -110,7 +130,5 @@ public class StackMachine {
 			System.out.println("Still characters, but empty stack");
 			return false;
 		}// catch
-		
-		return true;
 	}// test
 }// StackMachine

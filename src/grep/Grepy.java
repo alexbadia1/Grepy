@@ -78,7 +78,8 @@ public class Grepy {
 		s.getDfa().export(input.getDfaFilename());
 		
 		
-		StackMachine m = new StackMachine(s.getDfa());
+		StackMachine stackMachine = new StackMachine(s.getDfa());
+		stackMachine.test(input.getTestFilename());
 	}// main
 	
 	private static ArrayList<String> learnAlphabet(String textFilename) {

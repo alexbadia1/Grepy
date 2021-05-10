@@ -105,6 +105,12 @@ public class SubsetConstruction {
 						this.dfa.setStartState(singleStartState);
 						this.dfa.addState(singleStartState);
 						
+						// If the Start State is an accepting state
+						if(this.nfa.getStartState().isAccepting) {
+							this.dfa.addAcceptingStateKeys(currState);
+							this.dfa.addAcceptedStates(singleStartState);
+						}// if
+						
 						isDfaStartingState = false;
 					}// if
 					
@@ -119,6 +125,7 @@ public class SubsetConstruction {
 					
 					// Sets DFA Accepting State(s)
 					setAcceptingStates: for (State eCloseState: eClosureOfNewDfaState) {
+						System.out.println();
 						if(eCloseState.isAccepting) {
 							this.dfa.addAcceptingStateKeys(eClosureOfNewDfaState);
 							this.dfa.addAcceptedStates(singleEClosureOfNewDfaState);

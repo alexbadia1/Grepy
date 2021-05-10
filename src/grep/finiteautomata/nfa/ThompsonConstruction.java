@@ -253,6 +253,10 @@ public class ThompsonConstruction {
 		
 		// 2.) Create new start and end states for union
 		State newStart = new StartState(stateId++);
+		
+		// Start state of a kleene star is technically an accepting state
+		newStart.isAccepting = true;
+		
 		State newAccept = new AcceptedState(stateId++);
 		
 		// 3.) Combine states the popped NFA
