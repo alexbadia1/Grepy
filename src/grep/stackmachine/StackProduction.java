@@ -1,6 +1,6 @@
 package grep.stackmachine;
 
-import grep.finiteautomata.State;
+import grep.finiteautomata.states.State;
 
 public class StackProduction {
 	private String read;

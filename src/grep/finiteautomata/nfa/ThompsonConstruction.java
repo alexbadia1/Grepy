@@ -3,7 +3,10 @@ import java.util.ArrayList;
 import java.util.Queue;
 import java.util.Stack;
 
-import grep.finiteautomata.State;
+import grep.finiteautomata.DeltaFunction;
+import grep.finiteautomata.states.AcceptedState;
+import grep.finiteautomata.states.StartState;
+import grep.finiteautomata.states.State;
 import grep.lexer.Token;
 
 public class ThompsonConstruction {
@@ -37,10 +40,11 @@ public class ThompsonConstruction {
 	 * 
 	 * If no alphabet file is specified, will default to the symbols in the regex.
 	 */
-	private String[] alphabet = {"a", "b", "c", "d"};
+	private ArrayList<String> alphabet;
 	
-	public ThompsonConstruction(Queue<Token> tokens){
+	public ThompsonConstruction(Queue<Token> tokens, ArrayList<String> newAlphabet){
 		this.tokens = tokens;
+		this.alphabet = newAlphabet;
 	}// constructor
 	
 	/**
@@ -50,6 +54,7 @@ public class ThompsonConstruction {
 	 * on already existing atomic NFA's such as kleene star, concatenation, or union.
 	 */
 	public NFA thompsonConstruction() {
+		System.out.println("\n\nThompson Constuction:\n\n");
 		while (!tokens.isEmpty()) {
 			Token currentToken = tokens.remove();
 			switch(currentToken.type) {
@@ -57,19 +62,19 @@ public class ThompsonConstruction {
 				case "TERM_UNICODE":
 				case "TERM_NUMERIC":
 				case "TERM_ALPHABETIC":
-					System.out.println("Found: " + currentToken.type);
+					System.out.println("\nFound: " + currentToken.type + "\n");
 					this.term(currentToken);
 					break;
 				case "SYMBOL_KLEENE_STAR":
-					System.out.println("Found: " + currentToken.type);
+					System.out.println("\nFound: " + currentToken.type + "\n");
 					this.kleeneStar();
 					break;
 				case "IMPLIED_CONCATENATION":
-					System.out.println("Found: " + currentToken.type);
+					System.out.println("\nFound: " + currentToken.type + "\n");
 					this.concatenation();
 					break;
 				case "SYMBOL_UNION":
-					System.out.println("Found: " + currentToken.type);
+					System.out.println("\nFound: " + currentToken.type + "\n");
 					this.union();
 					break;
 				default:
@@ -84,13 +89,13 @@ public class ThompsonConstruction {
 	 * Creates an Atomic NFA that accepts a single term
 	 */
 	private void term(Token newToken) {
-		System.out.println("Generating Symbol NFA");
+		System.out.println("\n\nGenerating Symbol NFA...\n");
 		
 		// Start
-		State start = new State(this.stateId++, true, false);
+		State start = new StartState(this.stateId++);
 		
 		// Accept State
-		State accept = new State(this.stateId++, false, true);
+		State accept = new AcceptedState(this.stateId++);
 		
 		// States
 		ArrayList<State> states = new ArrayList<State>();
@@ -98,14 +103,16 @@ public class ThompsonConstruction {
 		states.add(accept);
 		
 		// Transitions
-		ArrayList<NFADeltaFunction> transitions = new ArrayList<NFADeltaFunction>();
+		ArrayList<DeltaFunction> transitions = new ArrayList<DeltaFunction>();
 		ArrayList<State> deltaEndStates = new ArrayList<State>();
 		deltaEndStates.add(accept);
 		transitions.add(new NFADeltaFunction(start, newToken.lexeme, deltaEndStates));
 		
 		// Create NFA and push onto stack
-		NFA newNFA = new NFA(start, states, transitions, accept, nfaId++, this.alphabet);
-		System.out.println("Atomic Symbol for: " + newToken.lexeme + "\n" + newNFA.toString());
+		NFA newNFA = new NFA(states, this.alphabet, start, transitions, accept, nfaId++);
+		
+		System.out.println("Atomic Symbol NFA for: " + newToken.lexeme + "\n");
+		newNFA.toString();
 		this.nfaStack.push(newNFA);
 	}// generateNfaForTerm
 	
@@ -121,14 +128,14 @@ public class ThompsonConstruction {
 		NFA nfa1 = this.nfaStack.pop();
 		
 		// 1.1.) Make sure nfa1 and nfa2 start and accepting states flag's are cleaned
-		nfa1.startState.resetFlags();
-		nfa1.acceptingState.resetFlags();
-		nfa2.startState.resetFlags();
-		nfa2.acceptingState.resetFlags();
-		
+		nfa1.getStartState().resetFlags();
+		nfa1.getAccepetedState().resetFlags();
+		nfa2.getStartState().resetFlags();
+		nfa2.getAccepetedState().resetFlags();
+				
 		// 2.) Create new start and end states for union
-		State newStart = new State(stateId++, true, false);
-		State newAccept = new State(stateId++, false, true);
+		State newStart = new StartState(stateId++);
+		State newAccept = new AcceptedState(stateId++);
 		
 		// 3.) Combine states from the two popped NFA's
 		ArrayList<State> newStates = new ArrayList<State>();
@@ -137,23 +144,23 @@ public class ThompsonConstruction {
 		newStates.add(newStart);
 		
 		// 3.2.) Add states from nfa1 and nfa2
-		newStates.addAll(nfa1.states);
-		newStates.addAll(nfa2.states);
+		newStates.addAll(nfa1.getStates());
+		newStates.addAll(nfa2.getStates());
 		
 		// 3.3.) Add new accept/end state
 		newStates.add(newAccept);
 		
 		// 4.) Combine both old nfa's transitions with new transitions
-		ArrayList<NFADeltaFunction> newTransitions = new ArrayList<NFADeltaFunction>();
+		ArrayList<DeltaFunction> newTransitions = new ArrayList<DeltaFunction>();
 		
 		// 4.1) Add nfa1 and nfa2 transitions
-		newTransitions.addAll(nfa1.transitions);
-		newTransitions.addAll(nfa2.transitions);
+		newTransitions.addAll(nfa1.getDelta());
+		newTransitions.addAll(nfa2.getDelta());
 		
 		// 4.2) Add Delta(newStart, ?) = {nfa1.startState, nfa2.startState}
 		ArrayList<State> newStartDeltaEndStates = new ArrayList<State>();
-		newStartDeltaEndStates.add(nfa1.startState);
-		newStartDeltaEndStates.add(nfa2.startState);
+		newStartDeltaEndStates.add(nfa1.getStartState());
+		newStartDeltaEndStates.add(nfa2.getStartState());
 		newTransitions.add(new NFADeltaFunction(newStart, "?", newStartDeltaEndStates));
 		
 		// 4.3) Add Delta(nfa1.acceptState, ?) = {newAccept}
@@ -162,19 +169,19 @@ public class ThompsonConstruction {
 		newEndDeltaEndStates.add(newAccept);
 		
 		// Don't override any existing transitions on nfa1's or nfa2's old end accepting state
-		if (nfa1.acceptingState != null) {
-			newEndDeltaEndStates.addAll(nfa1.acceptingState.children);
+		if (nfa1.getAccepetedState() != null) {
+			newEndDeltaEndStates.addAll(nfa1.getAccepetedState().children);
 		}// if
 		
-		if (nfa2.acceptingState != null) {
-			newEndDeltaEndStates.addAll(nfa2.acceptingState.children);
+		if (nfa2.getAccepetedState() != null) {
+			newEndDeltaEndStates.addAll(nfa2.getAccepetedState().children);
 		}// if
 		
-		newTransitions.add(new NFADeltaFunction(nfa1.acceptingState, "?", newEndDeltaEndStates));
-		newTransitions.add(new NFADeltaFunction(nfa2.acceptingState, "?", newEndDeltaEndStates));
+		newTransitions.add(new NFADeltaFunction(nfa1.getAccepetedState(), "?", newEndDeltaEndStates));
+		newTransitions.add(new NFADeltaFunction(nfa2.getAccepetedState(), "?", newEndDeltaEndStates));
 		
 		// Create new NFA and push onto stack
-		 this.nfaStack.push(new NFA(newStart, newStates, newTransitions, newAccept, nfaId++, this.alphabet));
+		 this.nfaStack.push(new NFA(newStates, this.alphabet, newStart, newTransitions, newAccept, nfaId++));
 	}// union
 	
 	/**
@@ -190,34 +197,34 @@ public class ThompsonConstruction {
 		
 		// 1.1.) Only clean nfa1 end accept state flags
 		//       and nfa2 start states flags
-		nfa1.acceptingState.resetFlags();
-		nfa2.startState.resetFlags();
-		
+		nfa1.getAccepetedState().resetFlags();
+		nfa2.getStartState().resetFlags();
+				
 		// 2.) Combine states from the two popped NFA's
 		ArrayList<State> newStates = new ArrayList<State>();
 		
 		// 2.2.) Add states from nfa1 and nfa2
-		newStates.addAll(nfa1.states);
-		newStates.addAll(nfa2.states);
+		newStates.addAll(nfa1.getStates());
+		newStates.addAll(nfa2.getStates());
 		
 		// 3.) Combine both old nfa's transitions with new transitions
-		ArrayList<NFADeltaFunction> newTransitions = new ArrayList<NFADeltaFunction>();
+		ArrayList<DeltaFunction> newTransitions = new ArrayList<DeltaFunction>();
 		
 		// 3.1) Add nfa1 and nfa2 transitions
-		newTransitions.addAll(nfa1.transitions);
-		newTransitions.addAll(nfa2.transitions);
+		newTransitions.addAll(nfa1.getDelta());
+		newTransitions.addAll(nfa2.getDelta());
 		
 		// 3.2) Add Delta(nfa1.acceptState, ?) = {nfa2.startState, [nfa1.startState for kleene star]}
 		ArrayList<State> newStartDeltaEndStates = new ArrayList<State>();
-		newStartDeltaEndStates.add(nfa2.startState);
+		newStartDeltaEndStates.add(nfa2.getStartState());
 		
-		if (nfa1.acceptingState != null) {
-			newStartDeltaEndStates.addAll(nfa1.acceptingState.children); // Avoid overwriting nfa1's end accept state transitions
+		if (nfa1.getAccepetedState() != null) {
+			newStartDeltaEndStates.addAll(nfa1.getAccepetedState().children); // Avoid overwriting nfa1's end accept state transitions
 		}// if
 		
-		newTransitions.add(new NFADeltaFunction(nfa1.acceptingState, "?", newStartDeltaEndStates));
+		newTransitions.add(new NFADeltaFunction(nfa1.getAccepetedState(), "?", newStartDeltaEndStates));
 		
-		NFA newNFA = new NFA(nfa1.startState, newStates, newTransitions, nfa2.acceptingState, nfaId++, this.alphabet);
+		NFA newNFA = new NFA(newStates, this.alphabet, nfa1.getStartState(), newTransitions, nfa2.getAccepetedState(), nfaId++);
 		System.out.println("Concatenation: \n" + newNFA.toString());
 		
 		// 4.) Create new NFA and push onto stack
@@ -235,12 +242,12 @@ public class ThompsonConstruction {
 		NFA nfa = this.nfaStack.pop();
 		
 		// 1.1.) Clean start and accepting states flags
-		nfa.startState.resetFlags();
-		nfa.acceptingState.resetFlags();
+		nfa.getStartState().resetFlags();
+		nfa.getAccepetedState().resetFlags();
 		
 		// 2.) Create new start and end states for union
-		State newStart = new State(stateId++, true, false);
-		State newAccept = new State(stateId++, false, true);
+		State newStart = new StartState(stateId++);
+		State newAccept = new AcceptedState(stateId++);
 		
 		// 3.) Combine states the popped NFA
 		ArrayList<State> newStates = new ArrayList<State>();
@@ -249,36 +256,36 @@ public class ThompsonConstruction {
 		newStates.add(newStart);
 		
 		// 3.2.) Add states from NFA
-		newStates.addAll(nfa.states);
+		newStates.addAll(nfa.getStates());
 		
 		// 3.3.) Add new accept/end state
 		newStates.add(newAccept);
 		
 		// 4.) Combine old NFA's transitions with new transitions
-		ArrayList<NFADeltaFunction> newTransitions = new ArrayList<NFADeltaFunction>();
+		ArrayList<DeltaFunction> newTransitions = new ArrayList<DeltaFunction>();
 		
 		// 4.1) Add old NFA transitions
-		newTransitions.addAll(nfa.transitions);
+		newTransitions.addAll(nfa.getDelta());
 		
 		// 4.2) Add Delta(newStart, ?) = {nfa.startState}
 		ArrayList<State> newStartDeltaEndStates = new ArrayList<State>();
-		newStartDeltaEndStates.add(nfa.startState);
+		newStartDeltaEndStates.add(nfa.getStartState());
 		newStartDeltaEndStates.add(newAccept); // Spontaneous transition from start to end
 		newTransitions.add(new NFADeltaFunction(newStart, "?", newStartDeltaEndStates));
 		
 		// 4.3) Add Delta(nfa.acceptState, ?) = {newAccept}
 		ArrayList<State> newEndDeltaEndStates = new ArrayList<State>();
 		newEndDeltaEndStates.add(newAccept);
-		newEndDeltaEndStates.add(nfa.startState); // Looping ? transition
+		newEndDeltaEndStates.add(nfa.getStartState()); // Looping ? transition
 		
-		if (nfa.acceptingState != null) {
-			newEndDeltaEndStates.addAll(nfa.acceptingState.children); // Avoid overwriting NFA's old end accept state transitions
+		if (nfa.getAccepetedState() != null) {
+			newEndDeltaEndStates.addAll(nfa.getAccepetedState().children); // Avoid overwriting NFA's old end accept state transitions
 		}// if
 		
-		newTransitions.add(new NFADeltaFunction(nfa.acceptingState, "?", newEndDeltaEndStates));
+		newTransitions.add(new NFADeltaFunction(nfa.getAccepetedState(), "?", newEndDeltaEndStates));
 		
 		// Create new NFA and push onto stack
-		NFA newNFA = new NFA(newStart, newStates, newTransitions, newAccept, nfaId++, this.alphabet);
+		NFA newNFA = new NFA(newStates, this.alphabet, newStart, newTransitions, newAccept, nfaId++);
 		System.out.println("Kleene Star: \n" + newNFA.toString());
 		this.nfaStack.push(newNFA);
 	}// kleeneStar

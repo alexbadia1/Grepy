@@ -1,22 +1,21 @@
-package grep.finiteautomata;
+package grep.finiteautomata.states;
+
 import java.util.ArrayList;
 
 public class State {
 	public int name = 0;
-	public String nickName = "[nickname]";
-	public boolean isStart = false;
-	public boolean isAccepting = false;
-	public ArrayList<State> children = new ArrayList<State>();
+	public boolean isStart;
+	public boolean isAccepting;
+	public ArrayList<State> children;
 	
-	public State(int name, boolean isStart, boolean isAccepting) {
-		super();
+	public State(int name) {
 		this.name = name;
-		this.isStart = isStart;
-		this.isAccepting = isAccepting;
+		
+		this.children = new ArrayList<State>();
 	}// constructor
 	
 	public void resetFlags() {
-		this.isAccepting = false;
 		this.isStart = false;
+		this.isAccepting = false;
 	}// resetFlags
 }// class

@@ -1,4 +1,5 @@
 package grep;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Scanner;
 
@@ -9,9 +10,13 @@ import grep.lexer.Lexer;
 import grep.parser.Parser;
 import grep.stackmachine.StackMachine;
 
-public class Grep {
+public class Grepy {
 	public static void main (String[] args) {
 		Arrays.toString(args);
+		
+		String nfaFilename = "nfa";
+		String dfaFilename = "dfa";
+		String testFilename = "test";
 		
 		Scanner scanner = new Scanner(System.in);
 		
@@ -19,6 +24,12 @@ public class Grep {
 		
 		String regex = scanner.nextLine();
 		System.out.println();
+		
+		ArrayList<String> sigma = new ArrayList<String>();
+		
+		for (int i = 97; i < 100; ++i) {
+			sigma.add(Character.toString(i));
+		}// for
 		
 		// Lex regular expression into tokens
 		Lexer lexer = new Lexer();
@@ -31,7 +42,7 @@ public class Grep {
 		parser.printTokenList();
 		
 		// Create the NFA using Thompson Construction
-		ThompsonConstruction thompsonConstructor = new ThompsonConstruction(parser.getParsedTokens());
+		ThompsonConstruction thompsonConstructor = new ThompsonConstruction(parser.getParsedTokens(), sigma);
 		NFA nfa = thompsonConstructor.thompsonConstruction();
 		nfa.toString();
 		nfa.toGraph();
@@ -39,9 +50,10 @@ public class Grep {
 		// Convert NFA to DFA using subset/powerset construction
 		SubsetConstruction s = new SubsetConstruction(nfa);
 		s.subsetConstruction();
-		System.out.println(s.getDfa().toString());
+		System.out.print("Final DFA: ");
+		s.getDfa().toString();
 		s.getDfa().toGraph();
-		s.getDfa().export();
+		s.getDfa().export(nfaFilename);
 		
 		
 		StackMachine m = new StackMachine(s.getDfa());

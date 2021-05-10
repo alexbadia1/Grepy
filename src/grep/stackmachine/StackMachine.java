@@ -1,7 +1,8 @@
 package grep.stackmachine;
-import grep.finiteautomata.State;
+import grep.finiteautomata.DeltaFunction;
 import grep.finiteautomata.dfa.DFA;
 import grep.finiteautomata.dfa.DFADeltaFunction;
+import grep.finiteautomata.states.State;
 
 import java.util.Hashtable;
 import java.util.Stack;
@@ -32,10 +33,12 @@ public class StackMachine {
 	}// constructor
 	
 	private void convertDfaToStackMachine() {
-		for(DFADeltaFunction df: this.dfa.transitions) {
+		for(DeltaFunction df: this.dfa.getDelta()) {
+			DFADeltaFunction dfaDeltaFunction = (DFADeltaFunction)df;
+			System.out.println(df.toString());
 			this.table.put(
-					(df.getInputSymbol()+String.valueOf(this.dfa.states.get(df.getInputState()).name)), 
-					this.dfa.states.get(df.getOutputState())
+					(dfaDeltaFunction.getTransitionSymbol()+String.valueOf(dfaDeltaFunction.getStartingState().name)),
+					dfaDeltaFunction.getAcceptedState()
 			);// this.table.put
 		}// for
 	}// convertDfaToStackMachine
@@ -68,13 +71,10 @@ public class StackMachine {
 					
 					return true;
 				}// if
-				
-				else {
-					
-					System.out.println("Ended on an invalid state: " + this.stack.peek().name);
-					return false;
-				}// else
 			}// for
+			
+			System.out.println("Ended on an invalid state: " + this.stack.peek().name);
+			return false;
 		}// if
 		
 		// Read character
