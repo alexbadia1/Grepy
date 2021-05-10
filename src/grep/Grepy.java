@@ -79,7 +79,13 @@ public class Grepy {
 		
 		
 		StackMachine stackMachine = new StackMachine(s.getDfa());
+		System.out.println("\n\n\n" + Util.divider);
+		System.out.println("Stack Machine Testing:\n");
+		System.out.println("  Regex: " + input.getRegex() + "\n");
+		System.out.println("  Input: " + input.getTestFilename() + ".txt\n");
+		System.out.println(Util.divider);
 		stackMachine.test(input.getTestFilename());
+		System.out.println(Util.divider);
 	}// main
 	
 	private static ArrayList<String> learnAlphabet(String textFilename) {
