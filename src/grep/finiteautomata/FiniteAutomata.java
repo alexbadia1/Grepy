@@ -34,6 +34,7 @@ import grep.LabeledDefaultEdge;
 import grep.finiteautomata.states.State;
 
 public class FiniteAutomata {
+	protected String type;
 	protected ArrayList<State> states;
 	protected ArrayList<String> sigma;
 	protected ArrayList<State> startStates;
@@ -43,7 +44,7 @@ public class FiniteAutomata {
 	protected Graph<String, DefaultEdge> graph;
 	
 	protected FiniteAutomata(ArrayList<State> states, ArrayList<String> sigma, ArrayList<State> startStates,
-			ArrayList<DeltaFunction> delta, ArrayList<State> acceptedStates, int id) {
+			ArrayList<DeltaFunction> delta, ArrayList<State> acceptedStates, int id, String type) {
 		super();
 		this.states = states;
 		this.sigma = sigma;
@@ -51,6 +52,7 @@ public class FiniteAutomata {
 		this.delta = delta;
 		this.acceptedStates = acceptedStates;
 		this.id = id;
+		this.type = type;
 		this.graph = new DirectedPseudograph<>(LabeledDefaultEdge.class);
 	}// constructor
 
@@ -241,12 +243,13 @@ public class FiniteAutomata {
         	System.out.println("FA in DOT language:\n\n" + writer.toString());
             
             // Write DOT language to a note pad file
-            System.out.println("Writing NFA in DOT language to \"src/graphs/" + filename + ".txt\"");
-            File file = new File("src/graphs/" + filename + ".txt");
+            System.out.println("Writing NFA in DOT language to \"src/grep/graphs/" + filename + ".txt\"");
+            File file = new File("src/grep/graphs/" + filename + ".txt");
             exporter.exportGraph(this.graph, file);
+            System.out.println("Successfully wrote FA in DOT language to \"src/grep/graphs/" + filename + ".txt\"\n");
         }// try
         catch(Exception e){
-        	System.out.println("Failed to write FA in DOT language to \"src/graphs/" + filename + ".txt\"\n" + e.toString());
+        	System.out.println("Failed to write FA in DOT language to \"src/grep/graphs/" + filename + ".txt\"\n" + e.toString());
         }// catch
 	}// exportToFile
 	
@@ -254,7 +257,7 @@ public class FiniteAutomata {
 		// Use DOT to create NFA image file
         try {
         	// Visualize graph in image file
-        	System.out.println("Visualizing FA at \"src/graphs/" + filename + ".png\"");
+        	System.out.println("Visualizing FA at \"src/grep/graphs/" + filename + ".png\"");
         	
         	// Converts the JGraphT to mxGraph
         	JGraphXAdapter<String, DefaultEdge> graphAdapter = new JGraphXAdapter<String, DefaultEdge>(this.graph);
@@ -306,13 +309,13 @@ public class FiniteAutomata {
         	
             layout.execute(graphAdapter.getDefaultParent());
             BufferedImage image = mxCellRenderer.createBufferedImage(graphAdapter, null, 2, Color.WHITE, true, null);
-        	File imgFile = new File("src/graphs/" + filename + ".png");
+        	File imgFile = new File("src/grep/graphs/" + filename + ".png");
         	ImageIO.write(image, "PNG", imgFile);
         	
-        	System.out.println("Successfully output FA to \"src/graphs/" + filename + ".png\"");
+        	System.out.println("Successfully output FA to \"src/grep/graphs/" + filename + ".png\"");
         }// try
         catch (Exception e) {
-        	System.out.println("Failed to output FA to \"src/graphs/" + filename + ".png\"");
+        	System.out.println("Failed to output FA to \"src/grep/graphs/" + filename + ".png\"");
         }// catch
 	}// exportToPng
 	
@@ -344,7 +347,7 @@ public class FiniteAutomata {
 	
 	public String toString() {
 		String ans = "\n\n";
-		ans += "FA: \n"; 
+		ans += this.type + ": \n"; 
 		ans += "States = " + this.statesToString(this.states) + "\n";
 		ans += "Alphabet = " + Arrays.toString(this.sigma.toArray()) + "\n";
 		ans += "Start State(s) = " + this.statesToString(this.startStates) + "\n";

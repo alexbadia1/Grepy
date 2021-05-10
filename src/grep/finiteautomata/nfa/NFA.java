@@ -14,7 +14,7 @@ public class NFA extends FiniteAutomata{
 			ArrayList<DeltaFunction> transitions,
 			State acceptedState,
 			int id) {
-		super(states, alphabet, new ArrayList<State>(), transitions, new ArrayList<State>(), id);
+		super(states, alphabet, new ArrayList<State>(), transitions, new ArrayList<State>(), id, "NFA");
 		super.startStates.add(startState);
 		super.acceptedStates.add(acceptedState);
 	}// constructor

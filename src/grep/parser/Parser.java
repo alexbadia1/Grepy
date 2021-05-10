@@ -102,9 +102,10 @@ public class Parser {
 	}// getParsedTokens
 	
 	public void printTokenList() {
-		System.out.println("\n\nParser:\n\n");
+		System.out.println("\nParse: Post-Fix Order");
+		System.out.println("-------------------------");
 		for (Token token: this.parsedTokens) {
-			System.out.println(token.type + " ");
+			System.out.println("  " + token.type);
 		}// for
 	}// printTokenList
 }// class

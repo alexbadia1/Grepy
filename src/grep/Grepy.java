@@ -1,6 +1,9 @@
 package grep;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Scanner;
 
 import grep.finiteautomata.dfa.SubsetConstruction;
@@ -12,29 +15,22 @@ import grep.stackmachine.StackMachine;
 
 public class Grepy {
 	public static void main (String[] args) {
-		Arrays.toString(args);
+		System.out.println("Info: Grepy read: " + Arrays.toString(args) + "\n");
 		
-		String nfaFilename = "nfa";
-		String dfaFilename = "dfa";
-		String testFilename = "test";
+		// Check for valid input
+		InputFilter input = new InputFilter(args);
 		
-		Scanner scanner = new Scanner(System.in);
+		if(!input.isValid()) {
+			System.out.println("Info: Args follow: -n [nfa-filename] -d [dfa-filename] regex [test-filename]");
+			return;
+		}// if
 		
-		System.out.print("Regular Expression: ");
-		
-		String regex = scanner.nextLine();
-		System.out.println();
-		
-		ArrayList<String> sigma = new ArrayList<String>();
-		
-		for (int i = 97; i < 100; ++i) {
-			sigma.add(Character.toString(i));
-		}// for
+		// Learn alphabet
+		ArrayList<String> alphabet = learnAlphabet(input.getTestFilename());
 		
 		// Lex regular expression into tokens
 		Lexer lexer = new Lexer();
-		lexer.lex(regex);
-		lexer.printTokenList();
+		lexer.lex(input.getRegex());
 		
 		// Parse tokens to take into account precedence 
 		Parser parser = new Parser();
@@ -42,7 +38,7 @@ public class Grepy {
 		parser.printTokenList();
 		
 		// Create the NFA using Thompson Construction
-		ThompsonConstruction thompsonConstructor = new ThompsonConstruction(parser.getParsedTokens(), sigma);
+		ThompsonConstruction thompsonConstructor = new ThompsonConstruction(parser.getParsedTokens(), alphabet);
 		NFA nfa = thompsonConstructor.thompsonConstruction();
 		nfa.toString();
 		nfa.toGraph();
@@ -53,16 +49,43 @@ public class Grepy {
 		System.out.print("Final DFA: ");
 		s.getDfa().toString();
 		s.getDfa().toGraph();
-		s.getDfa().export(nfaFilename);
+		s.getDfa().export(input.getNfaFilename());
 		
 		
 		StackMachine m = new StackMachine(s.getDfa());
-		// Keep testing
-		while (true) {
-			System.out.print("Test: ");
-			String test = scanner.nextLine();
-			System.out.println();
-			m.test(test);
-		}// while
 	}// main
+	
+	private static ArrayList<String> learnAlphabet(String textFilename) {
+		try {
+			HashSet<String> uniqueAlhpabet = new HashSet<String>();
+			ArrayList<String> sigma = new ArrayList<String>();
+			
+			String text = "";
+			File testFile = new File(textFilename + ".txt");
+			Scanner scanner = new Scanner(testFile);
+			while (scanner.hasNextLine()) {
+				text += scanner.nextLine().replace(" ", "");
+			}// while
+			
+			System.out.println(Arrays.toString(text.split("")));
+			
+			for (String letter: text.split("")) {
+				uniqueAlhpabet.add(letter);
+			}// for
+			
+			System.out.println(uniqueAlhpabet.toString());
+			scanner.close();
+			
+			for (String symbol: uniqueAlhpabet) {
+				sigma.add(symbol);
+			}// for
+			
+			return sigma;
+		}// try
+		
+		catch (FileNotFoundException e) {
+			System.out.println("Error: Could not input file '" + textFilename + "'.");
+			return null;
+		}// catch
+	}// learnAlphabet
 }// class
