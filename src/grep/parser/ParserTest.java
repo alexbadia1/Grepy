@@ -1,3 +1,4 @@
+package grep.parser;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.ArrayList;
@@ -6,6 +7,8 @@ import java.util.Queue;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import grep.lexer.Token;
 
 class ParserTest {
 	private Parser parser;

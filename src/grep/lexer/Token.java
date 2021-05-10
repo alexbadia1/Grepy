@@ -1,3 +1,4 @@
+package grep.lexer;
 public class Token {
 	public String type;
 	public String lexeme;
@@ -12,7 +13,7 @@ public class Token {
 	 */
 	public int priority;
 	
-	Token(String newType, String newLexeme, int newPriority) {
+	public Token(String newType, String newLexeme, int newPriority) {
 		this.type = newType;
 		this.lexeme = newLexeme;
 		this.priority = newPriority;

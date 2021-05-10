@@ -1,4 +1,8 @@
+package grep.parser;
 import java.util.Stack;
+
+import grep.lexer.Token;
+
 import java.util.Queue;
 import java.util.ArrayList;
 import java.util.EmptyStackException;
@@ -10,7 +14,6 @@ public class Parser {
 	private Stack<Token> operatorStack = new Stack<Token>();
 	
 	public void parse(ArrayList<Token> newTokens) {
-
 		int index = 0;
 		Token currentToken = null;
 		
@@ -99,7 +102,7 @@ public class Parser {
 	}// getParsedTokens
 	
 	public void printTokenList() {
-		System.out.println("Parser: ");
+		System.out.println("\n\nParser:\n\n");
 		for (Token token: this.parsedTokens) {
 			System.out.println(token.type + " ");
 		}// for
