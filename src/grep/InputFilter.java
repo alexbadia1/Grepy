@@ -40,7 +40,7 @@ public class InputFilter {
 				System.out.println("Error:Invalid filename '" + this.args[3] + "' at pos 4");
 				return false;
 			}// if
-			this.nfaFilename = this.args[3];
+			this.dfaFilename = this.args[3];
 			
 			// Get regex and test later
 			this.regex = this.args[4];

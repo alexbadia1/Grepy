@@ -35,7 +35,6 @@ public class StackMachine {
 	private void convertDfaToStackMachine() {
 		for(DeltaFunction df: this.dfa.getDelta()) {
 			DFADeltaFunction dfaDeltaFunction = (DFADeltaFunction)df;
-			System.out.println(df.toString());
 			this.table.put(
 					(dfaDeltaFunction.getTransitionSymbol()+String.valueOf(dfaDeltaFunction.getStartingState().name)),
 					dfaDeltaFunction.getAcceptedState()

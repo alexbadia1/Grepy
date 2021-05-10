@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Scanner;
+import java.util.regex.Pattern;
 
 import grep.finiteautomata.dfa.SubsetConstruction;
 import grep.finiteautomata.nfa.NFA;
@@ -15,18 +16,33 @@ import grep.stackmachine.StackMachine;
 
 public class Grepy {
 	public static void main (String[] args) {
-		System.out.println("Info: Grepy read: " + Arrays.toString(args) + "\n");
+		System.out.println("Grepy read: " + Arrays.toString(args).replace("[", "").replace("]", "").replace(",", "") + "\n");
 		
 		// Check for valid input
 		InputFilter input = new InputFilter(args);
 		
 		if(!input.isValid()) {
-			System.out.println("Info: Args follow: -n [nfa-filename] -d [dfa-filename] regex [test-filename]");
+			System.out.println("Info: Args follow: [-n nfa-filename] [-d dfa-filename] regex [test-filename]");
 			return;
 		}// if
 		
 		// Learn alphabet
 		ArrayList<String> alphabet = learnAlphabet(input.getTestFilename());
+		
+		for(String letter: input.getRegex().split("")) {
+			if (!Pattern.compile("^\\(|\\)|\\*|\\+$").matcher(letter).find()) {
+				if(!alphabet.contains(letter)) {
+					alphabet.add(letter);
+				}// if
+			}// if
+		}// for
+		
+		System.out.println("Final Sigma: " + alphabet);
+		
+		// Fail if not test file was given
+		if (alphabet == null) {
+			return;
+		}// if
 		
 		// Lex regular expression into tokens
 		Lexer lexer = new Lexer();
@@ -44,7 +60,10 @@ public class Grepy {
 		System.out.println("Thompson Construction Resulting NFA: ");
 		System.out.println(Util.divider);
 		nfa.toString();
+		
+		// Export NFA as DOT and PNG files
 		nfa.toGraph();
+		nfa.export(input.getNfaFilename());
 		
 		// Convert NFA to DFA using subset/powerset construction
 		SubsetConstruction s = new SubsetConstruction(nfa);
@@ -53,8 +72,10 @@ public class Grepy {
 		System.out.println("Powerset/Subset Construction Resulting DFA: ");
 		System.out.println(Util.divider);
 		s.getDfa().toString();
+		
+		// Export DFA as DOT and PNG files
 		s.getDfa().toGraph();
-		s.getDfa().export(input.getNfaFilename());
+		s.getDfa().export(input.getDfaFilename());
 		
 		
 		StackMachine m = new StackMachine(s.getDfa());
@@ -72,13 +93,10 @@ public class Grepy {
 				text += scanner.nextLine().replace(" ", "");
 			}// while
 			
-			System.out.println(Arrays.toString(text.split("")));
-			
 			for (String letter: text.split("")) {
 				uniqueAlhpabet.add(letter);
 			}// for
 			
-			System.out.println(uniqueAlhpabet.toString());
 			scanner.close();
 			
 			for (String symbol: uniqueAlhpabet) {

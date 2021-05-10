@@ -1,4 +1,5 @@
 package grep.finiteautomata.dfa;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Hashtable;
 
@@ -36,6 +37,9 @@ public class SubsetConstruction {
 		//
 		// Begin subset construction from the nfa's starting node
 		this.subsetConstruction(this.epsilonClosure(this.nfa.getStartState(), new HashSet<State>()), true);
+		
+		// Thompson construction makes it so that the DFA will only have one trap state when converted to an DFA
+		this.insertTrapState();
 	}// subsetConstruction
 	
 	private void subsetConstruction(HashSet<State> currState, boolean isDfaStartingState) {
@@ -162,4 +166,34 @@ public class SubsetConstruction {
 		
 		return null;
 	}// searchForDeltaFunction
+	
+	private void insertTrapState() {
+		State trapState = new State(this.dfa.useStateId());
+		
+		for (State s: this.dfa.getStates()) {
+			ArrayList<String> usedLetters = new ArrayList<String>();
+			
+			// Keep track of what letter the state uses
+			for (DeltaFunction df: this.dfa.getDelta()) {
+				if (s.name == df.getStartingState().name) {
+					usedLetters.add(df.getTransitionSymbol());
+				}// if
+			}// for
+			
+			for(String l: this.dfa.getSigma()) {
+				// Add transitions to trap state on letters the current DFA state doesn't use.
+				if(!usedLetters.contains(l)) {
+					this.dfa.addDelta(new DFADeltaFunction(s, l, trapState));
+				}// if
+			}// for
+		}// for
+		
+		for(String l: this.dfa.getSigma()) {
+	
+			// While we're at it, make the trap state loop back to itself
+			this.dfa.addDelta(new DFADeltaFunction(trapState, l, trapState));
+		}// for
+		
+		this.dfa.addState(trapState);
+	}// insertTrapState
 }// class

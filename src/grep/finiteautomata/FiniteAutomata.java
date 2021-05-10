@@ -31,6 +31,7 @@ import com.mxgraph.util.mxConstants;
 import com.mxgraph.view.mxStylesheet;
 
 import grep.LabeledDefaultEdge;
+import grep.Util;
 import grep.finiteautomata.states.State;
 
 public class FiniteAutomata {
@@ -159,15 +160,22 @@ public class FiniteAutomata {
 					LabeledDefaultEdge foundEdgeLabel = this.searchForDuplicateEdge(startStateName, endStateName, edgeLabels);
 					foundEdgeLabel.setLabel(foundEdgeLabel.toString() + ", " + trans.transitionSymbol);
 					
+					// Copy edge label to a new class to avoid duplicate edge errors problems
+					LabeledDefaultEdge edgeCopy = new LabeledDefaultEdge(
+							foundEdgeLabel.toString(),
+							startStateName, 
+							endStateName);
+					
 					// Remove existing edge before adding new edge
 					this.graph.removeEdge(startStateName, endStateName);
-					this.graph.addEdge(startStateName, endStateName, foundEdgeLabel);
+					System.out.println("Added Egde: <s>" + startStateName + " <d>" + endStateName + " label " + edgeCopy.toString());
+					this.graph.addEdge(startStateName, endStateName, edgeCopy);
 				}// if
 				
 				// New edge
 				else {
 					LabeledDefaultEdge edgeLabel = new LabeledDefaultEdge(trans.transitionSymbol,startStateName, endStateName);
-					
+					// System.out.println("Added Egde: <s>" + startStateName + " <d>" + endStateName + " label " + edgeLabel.toString());
 					this.graph.addEdge(startStateName, endStateName, edgeLabel);
 					edgeLabels.add(edgeLabel);
 				}// else
@@ -238,10 +246,14 @@ public class FiniteAutomata {
         	// Show NFA in DOT language via standard output
         	Writer writer = new StringWriter();
         	exporter.exportGraph(this.graph, writer);
-        	System.out.println("FA in DOT language:\n\n" + writer.toString());
+        	System.out.println("\n\n\n" + Util.divider);
+        	System.out.println("FA in DOT language:");
+        	System.out.println(Util.divider);
+        	System.out.print(writer.toString());
+        	System.out.println(Util.divider);
             
             // Write DOT language to a note pad file
-            System.out.println("Writing NFA in DOT language to \"src/grep/graphs/" + filename + ".txt\"");
+            System.out.println("\n\nWriting NFA in DOT language to \"src/grep/graphs/" + filename + ".txt\"");
             File file = new File("src/grep/graphs/" + filename + ".txt");
             exporter.exportGraph(this.graph, file);
             System.out.println("Successfully wrote FA in DOT language to \"src/grep/graphs/" + filename + ".txt\"\n");
@@ -255,7 +267,7 @@ public class FiniteAutomata {
 		// Use DOT to create NFA image file
         try {
         	// Visualize graph in image file
-        	System.out.println("Visualizing FA at \"src/grep/graphs/" + filename + ".png\"");
+        	System.out.println("\nVisualizing FA at \"src/grep/graphs/" + filename + ".png\"");
         	
         	// Converts the JGraphT to mxGraph
         	JGraphXAdapter<String, DefaultEdge> graphAdapter = new JGraphXAdapter<String, DefaultEdge>(this.graph);
