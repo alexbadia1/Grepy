@@ -1,3 +1,4 @@
+package grep.finiteautomata;
 import java.util.ArrayList;
 
 public class State {

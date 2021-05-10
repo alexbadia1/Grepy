@@ -1,11 +1,14 @@
+package grep.finiteautomata.nfa;
 import java.util.ArrayList;
+
+import grep.finiteautomata.State;
 
 public class NFADeltaFunction {
 	private State startingState = null;
 	private String transitionSymbol = "[Insert Transition]";
 	private ArrayList<State> endingStates = new ArrayList<State>();
 	
-	NFADeltaFunction(State startingState, String transitionSymbol, ArrayList<State> endingStates) {
+	public NFADeltaFunction(State startingState, String transitionSymbol, ArrayList<State> endingStates) {
 		this.startingState = startingState;
 		this.transitionSymbol = transitionSymbol;
 		this.endingStates = endingStates;

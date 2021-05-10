@@ -1,3 +1,8 @@
+package grep.stackmachine;
+import grep.finiteautomata.State;
+import grep.finiteautomata.dfa.DFA;
+import grep.finiteautomata.dfa.DFADeltaFunction;
+
 import java.util.Hashtable;
 import java.util.Stack;
 

@@ -1,6 +1,10 @@
+package grep.finiteautomata.nfa;
 import java.util.ArrayList;
 import java.util.Queue;
 import java.util.Stack;
+
+import grep.finiteautomata.State;
+import grep.lexer.Token;
 
 public class ThompsonConstruction {
 	/**
@@ -35,7 +39,7 @@ public class ThompsonConstruction {
 	 */
 	private String[] alphabet = {"a", "b", "c", "d"};
 	
-	ThompsonConstruction(Queue<Token> tokens){
+	public ThompsonConstruction(Queue<Token> tokens){
 		this.tokens = tokens;
 	}// constructor
 	

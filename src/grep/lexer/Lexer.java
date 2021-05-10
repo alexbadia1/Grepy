@@ -1,3 +1,4 @@
+package grep.lexer;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -33,7 +34,7 @@ public class Lexer {
 	private String regExp;
 	private ArrayList<Token> tokenArrayList;
 	
-	Lexer() {
+	public Lexer() {
 		this.tokenArrayList = new ArrayList<Token>();
 	}// constructor
 	

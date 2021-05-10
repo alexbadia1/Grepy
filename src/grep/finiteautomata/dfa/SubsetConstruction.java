@@ -1,5 +1,10 @@
+package grep.finiteautomata.dfa;
 import java.util.HashSet;
 import java.util.Hashtable;
+
+import grep.finiteautomata.State;
+import grep.finiteautomata.nfa.NFA;
+import grep.finiteautomata.nfa.NFADeltaFunction;
 
 public class SubsetConstruction {
 	private NFA nfa;

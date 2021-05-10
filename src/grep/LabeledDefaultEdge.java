@@ -1,3 +1,4 @@
+package grep;
 import org.jgrapht.graph.DefaultEdge;
 
 public class LabeledDefaultEdge extends DefaultEdge {

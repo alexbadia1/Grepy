@@ -1,3 +1,7 @@
+package grep.stackmachine;
+
+import grep.finiteautomata.State;
+
 public class StackProduction {
 	private String read;
 	private State pop;

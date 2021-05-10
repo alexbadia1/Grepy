@@ -1,7 +1,18 @@
+package grep;
+import java.util.Arrays;
 import java.util.Scanner;
 
-public class Grepy {
+import grep.finiteautomata.dfa.SubsetConstruction;
+import grep.finiteautomata.nfa.NFA;
+import grep.finiteautomata.nfa.ThompsonConstruction;
+import grep.lexer.Lexer;
+import grep.parser.Parser;
+import grep.stackmachine.StackMachine;
+
+public class Grep {
 	public static void main (String[] args) {
+		Arrays.toString(args);
+		
 		Scanner scanner = new Scanner(System.in);
 		
 		System.out.print("Regular Expression: ");
@@ -40,7 +51,6 @@ public class Grepy {
 			String test = scanner.nextLine();
 			System.out.println();
 			m.test(test);
-//			System.out.println(nfa.accepts(test));
 		}// while
 	}// main
 }// class

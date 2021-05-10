@@ -1,3 +1,4 @@
+package grep.finiteautomata.nfa;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -5,16 +6,11 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Hashtable;
 import java.util.LinkedHashMap;
 import java.util.Map;
-
 import javax.imageio.ImageIO;
 import javax.swing.SwingConstants;
-
 import org.jgrapht.Graph;
 import org.jgrapht.ext.JGraphXAdapter;
 import org.jgrapht.graph.DefaultEdge;
@@ -22,7 +18,6 @@ import org.jgrapht.graph.DirectedPseudograph;
 import org.jgrapht.nio.Attribute;
 import org.jgrapht.nio.DefaultAttribute;
 import org.jgrapht.nio.dot.DOTExporter;
-
 import com.mxgraph.layout.mxIGraphLayout;
 import com.mxgraph.layout.hierarchical.mxHierarchicalLayout;
 import com.mxgraph.model.mxGeometry;
@@ -31,65 +26,54 @@ import com.mxgraph.util.mxCellRenderer;
 import com.mxgraph.util.mxConstants;
 import com.mxgraph.view.mxStylesheet;
 
-public class DFA {
-	public Hashtable<HashSet<State>, State> states;
-	public ArrayList<DFADeltaFunction> transitions;
-	private int stateId;
-	private int dfaID;
-	private Graph<String, DefaultEdge> graph;
-	private HashSet<State> startingStateKey;
-	private ArrayList<HashSet<State>> acceptingStateKeys;
+import grep.LabeledDefaultEdge;
+import grep.finiteautomata.State;
+
+public class NFA {
+	public State startState = null;
+	public ArrayList<State> states = new ArrayList<State>();
+	public ArrayList<NFADeltaFunction> transitions = new ArrayList<NFADeltaFunction>();
+	private int id = -1;
+	
+	/**
+	 * Alphabet read in from the input file
+	 */
+	private String[] alphabet = {"a", "b", "c", "d"};
 	
 	
-	public DFA(int dfaId) {
-		this.stateId = 0;
-		this.states = new Hashtable<HashSet<State>, State>();
-		this.transitions = new ArrayList<DFADeltaFunction>();
-		this.startingStateKey = new HashSet<State>();
-		this.acceptingStateKeys = new ArrayList<HashSet<State>>();
-		this.graph = new DirectedPseudograph<>(LabeledDefaultEdge.class);
-		this.dfaID = dfaId;
+	private Graph<String, DefaultEdge> graph = new DirectedPseudograph<>(LabeledDefaultEdge.class);
+	
+	/**
+	 * Accepting states in the NFA
+	 * 
+	 * Not implemented as a list since Thompson Construction
+	 * results in an NFA with only one accepting state.
+	 */
+	public State acceptingState = null;
+	
+	public NFA(State startState, 
+			ArrayList<State> states, 
+			ArrayList<NFADeltaFunction> transitions, 
+			State acceptingState, 
+			int id,
+			String[] alphabet) {
+		super();
+		this.startState = startState;
+		this.states = states;
+		this.transitions = transitions;
+		this.acceptingState = acceptingState;
+		this.id = id;
+		this.alphabet = alphabet;
 	}// constructor
 	
-	public State getStartingState() {
-		return this.states.get(this.startingStateKey);
-	}// setStartingState
+	public int getNfaId() {
+		return this.id;
+	}// getNfaId
 	
-	public void setStartingState(HashSet<State> nfaStates) {;
-		this.startingStateKey = nfaStates;
-	}// setStartingState
+	public String[] getAlphabet() {
+		return this.alphabet;
+	}// getAlphabet
 	
-	public ArrayList<State> getAcceptingStates() {
-		ArrayList<State> acceptingStates = new ArrayList<State>();
-		
-		for (HashSet<State> key: this.acceptingStateKeys) {
-			acceptingStates.add(this.states.get(key));
-		}// for
-		
-		return acceptingStates;
-	}// getAcceptingStates
-	
-	public void setAcceptingStates(ArrayList<HashSet<State>> nfaStates) {;
-		this.acceptingStateKeys = nfaStates;
-	}// setStartingState
-	
-	public void addAcceptingState(HashSet<State> nfaStates) {
-		this.acceptingStateKeys.add(nfaStates);
-	}// addAcceptingState
-	
-	public int useStateId () {
-		return this.stateId++;
-	}// useStateId
-	
-//	public boolean test(String input) {
-//		
-//		
-//		
-//	}// test
-	
-	/*
-	 * Converts the DFA to a graph
-	 */
 	public void toGraph() {
 		// New graph for NFA
 		this.graph = new  DirectedPseudograph<>(LabeledDefaultEdge.class);
@@ -98,53 +82,24 @@ public class DFA {
 		this.graph.addVertex("start");
 		
 		// Add states
-		for(State state: this.states.values()) {
+		for(State state: this.states) {
 			this.graph.addVertex(String.valueOf(state.name));
 		}// for
 		
 		// Edge for start -> startingState
-		this.graph.addEdge(
-				"start", 
-				String.valueOf(this.states.get(this.startingStateKey).name), 
-				new LabeledDefaultEdge("")
-		);// this.graph.addEdge
+		this.graph.addEdge("start", String.valueOf(this.startState.name), new LabeledDefaultEdge(""));
 		
 		// Add edges using delta functions
-		// Search by state, to find states that have 
-		// multiple edges that can be combined into one.
-		ArrayList<Integer> skip = new ArrayList<Integer>();
-		for(int i = 0; i < this.transitions.size(); ++i) {
-			if (!skip.contains(Integer.valueOf(i))) {
-				DFADeltaFunction currentDelta = this.transitions.get(i); 
-				ArrayList<String> duplicateEdgesSymbols = new ArrayList<String>();
-				
-				// Search for duplicate edges in starting from (i + 1)
-				for (int h = i + 1; h < this.transitions.size(); ++h) {
-					if (this.states.get(this.transitions.get(h).getInputState()).name 
-							== this.states.get(currentDelta.getInputState()).name) {
-						if (this.states.get(this.transitions.get(h).getOutputState()).name 
-								== this.states.get(currentDelta.getOutputState()).name) {
-							duplicateEdgesSymbols.add(this.transitions.get(h).getInputSymbol());
-							skip.add(Integer.valueOf(h));
-						}// if
-					}// if
-				}// for
-				
-				String edgeName = currentDelta.getInputSymbol() + ", ";
-				for (String symbol: duplicateEdgesSymbols) {
-					edgeName += symbol + ", ";
-				}// for
-				
+		for(NFADeltaFunction deltaFunction: this.transitions) {
+			for (State endState: deltaFunction.getEndingStates()) {
 				this.graph.addEdge(
-						String.valueOf(this.states.get(currentDelta.getInputState()).name), // Input state
-						String.valueOf(this.states.get(currentDelta.getOutputState()).name), // output state
-						new LabeledDefaultEdge(edgeName) // transition
+						String.valueOf(deltaFunction.getStartingState().name), // Input state
+						String.valueOf(endState.name), // output state
+						new LabeledDefaultEdge(deltaFunction.getTransitionSymbol()) // transition
 				);// this.graph.addEdge
-			}// if
+			}// for
 		}// for
-	}// toGraph
 		
-	public void export() {
 		DOTExporter<String, DefaultEdge> exporter = new DOTExporter<>(v -> v);
 
 		// Set Graph properties
@@ -159,7 +114,7 @@ public class DFA {
             Map<String, Attribute> map = new LinkedHashMap<>();
             
             // Make double circle for accepting states
-            if(v.compareTo(String.valueOf(this.states.get(this.startingStateKey))) == 0) {
+            if(v.compareTo(String.valueOf(this.acceptingState.name)) == 0) {
             	map.put("shape", DefaultAttribute.createAttribute("doublecircle"));
             	map.put("label", DefaultAttribute.createAttribute("q" + v));
             }// if
@@ -199,18 +154,18 @@ public class DFA {
         	System.out.println("NFA in DOT language:\n\n" + writer.toString());
             
             // Write DOT language to a note pad file
-            System.out.println("Writing NFA in DOT language to \"src/graphs/dfa" + String.valueOf(dfaID) + ".txt\"");
-            File file = new File("src/graphs/dfa" + String.valueOf(dfaID) + ".txt");
+            System.out.println("Writing NFA in DOT language to \"src/graphs/nfa" + String.valueOf(id) + ".txt\"");
+            File file = new File("src/graphs/nfa" + String.valueOf(id) + ".txt");
             exporter.exportGraph(this.graph, file);
         }// try
         catch(Exception e){
-        	System.out.println("Failed to write NFA in DOT language to \"src/graphs/dfa" + String.valueOf(dfaID) + ".txt\"");
+        	System.out.println("Failed to write NFA in DOT language to \"src/graphs/nfa" + String.valueOf(id) + ".txt\"");
         }// catch
        
         // Use DOT to create NFA image file
         try {
         	// Visualize graph in image file
-        	System.out.println("Visualizing NFA at \"src/graphs/dfa" + String.valueOf(dfaID) + ".png\"");
+        	System.out.println("Visualizing NFA at \"src/graphs/nfa" + String.valueOf(id) + ".png\"");
         	
         	// Converts the JGraphT to mxGraph
         	JGraphXAdapter<String, DefaultEdge> graphAdapter = new JGraphXAdapter<String, DefaultEdge>(this.graph);
@@ -240,11 +195,6 @@ public class DFA {
         	edgeStyle.replace(mxConstants.STYLE_STROKECOLOR, "#808080");// Replace with silver arrows
         	stylesheet.setDefaultEdgeStyle(edgeStyle);
 
-        	ArrayList<String> acceptedStates = new ArrayList<String>();
-        	for (HashSet<State> k: this.acceptingStateKeys) {
-        		acceptedStates.add(String.valueOf(this.states.get(k).name));
-        	}// for
-        	
             // Set new geometry of cells
         	cells.forEach((s, c) ->{
             	c.setGeometry(new mxGeometry(0.0, 0.0, 55.0, 55.0));
@@ -255,70 +205,55 @@ public class DFA {
             	}// if
             	
             	// Highlight (well, actually grey out), accepted nodes
-            	else if (acceptedStates.contains(s)) {
+            	else if (String.valueOf(this.acceptingState.name).equals(s)) {
             		c.setStyle("fillColor=#808080");
             	}// if
             });
         	
             layout.execute(graphAdapter.getDefaultParent());
             BufferedImage image = mxCellRenderer.createBufferedImage(graphAdapter, null, 2, Color.WHITE, true, null);
-        	File imgFile = new File("src/graphs/dfa" + String.valueOf(dfaID) + ".png");
+        	File imgFile = new File("src/graphs/nfa" + String.valueOf(id) + ".png");
         	ImageIO.write(image, "PNG", imgFile);
         	
-        	System.out.println("Successfully output NFA to \"src/graphs/dfa" + String.valueOf(dfaID) + ".png\"");
+        	System.out.println("Successfully output NFA to \"src/graphs/nfa" + String.valueOf(id) + ".png\"");
         }// try
         catch (Exception e) {
-        	System.out.println("Failed to output NFA to \"src/graphs/dfa" + String.valueOf(dfaID) + ".png\"");
+        	System.out.println("Failed to output NFA to \"src/graphs/nfa" + String.valueOf(id) + ".png\"");
         }// catch
-	}// export
-
+	}// toGraph
+	
+	
+	/**
+	 * Shows the NFA 5 Tuple to standard output.
+	 */
 	public String toString() {
-		// Print out the all states
-		String states = "{";
-		int count = 0;
-		for (State state: this.states.values()) {
-			if (count < this.states.values().size() - 1) {
-				states += state.name  + ", ";
+		String statesToString = "{";
+		for (int i = 0; i < this.states.size(); ++i) {
+			if (i < this.states.size() - 1) {
+				statesToString += this.states.get(i).name  + ", ";
 			}// if
 			
 			else {
-				states += state.name;
+				statesToString += this.states.get(i).name;
 			}// else
-			count++;
 		}// for
-		states += "}";
+		statesToString += "}";
 		
-		// Print out deltas
-		String deltas = "{\n\t";
-		for (DFADeltaFunction delta: this.transitions) {
-			String endState = "{ " + String.valueOf(this.states.get(delta.getOutputState()).name)  + " }";
-			
-			deltas += "Delta(" + String.valueOf(this.states.get(delta.getInputState()).name) + ", " 
-					+ delta.getInputSymbol() + ") = " 
-					+ endState + "\n\t";
+		String deltas = "{\n";
+		for (NFADeltaFunction delta: this.transitions) {
+			deltas += "   " + delta.toString() + "\n";
 		}// for
 		deltas += "}\n";
 		
-		// Print out the accepted states
-		String acceptingStates = "{";
-		int acceptCount = 0;
-		for (HashSet<State> acceptStateKey: this.acceptingStateKeys) {
-			if (acceptCount < this.acceptingStateKeys.size() - 1) {
-				acceptingStates += String.valueOf(this.states.get(acceptStateKey).name)  + ", ";
-			}// if
-			else {
-				acceptingStates += String.valueOf(this.states.get(acceptStateKey).name);
-			}// else
-			acceptCount++;
-		}// for
-		acceptingStates += "}";
-		
 		String ans = "\n\n";
-		ans += "DFA: \n"; 
-		ans += "Start State = " + String.valueOf(this.states.get(this.startingStateKey).name) + "\n";
-		ans += "States = " + states + "\n";
+		ans += "NFA: \n"; 
+		ans += "Start State = " + String.valueOf(this.startState.name) + "\n";
+		ans += "States = " + statesToString + "\n";
+		ans += "Alphabet = " + Arrays.toString(this.alphabet) + "\n";
 		ans += "Transitions = " + deltas;
-		ans += "Accepting State = " + acceptingStates;
+		ans += "Accepting State = " + String.valueOf(this.acceptingState.name);
+		
+		System.out.println(ans);
 		
 		return ans;
 	}// toString

@@ -1,11 +1,14 @@
+package grep.finiteautomata.dfa;
 import java.util.HashSet;
+
+import grep.finiteautomata.State;
 
 public class DFADeltaFunction {
 	private HashSet<State> inputStateKey = null;
 	private HashSet<State> outputStateKey = null;
 	private String inputSymbol = "[Insert Transition]";
 	
-	DFADeltaFunction(HashSet<State> inputStateKey, String inputSymbol, HashSet<State> outputState) {
+	public DFADeltaFunction(HashSet<State> inputStateKey, String inputSymbol, HashSet<State> outputState) {
 		this.inputStateKey = inputStateKey;
 		this.inputSymbol = inputSymbol;
 		this.outputStateKey = outputState;
