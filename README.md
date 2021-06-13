@@ -29,17 +29,21 @@ For Mac of Linux refer to the official oracle docs:
   - https://docs.oracle.com/en/java/javase/16/install
   
 ### Installation
+This was my first time using Maven as a dependency manager, which made
+running this project from the command line a bit more confusing. In the mean time
+here's the general instructions to run the project from an IDE of your choice:
+
 
 Clone the repository make sure that:
-  - You have the PATH variable specified
-  - You are in the Grepy/bin directory where the .class files are specifed
+  - An IDE that can compile and run Java
+  - All the dependencies are installed
+  - You have a Maven extension in your IDE (may make your life easier)
 
-In the command line:
+In your IDE:
 
-  1. The projects class files are already compiled
-    - cd into the Grepy.bin directory
-  2. Run Grepy using the JDK 
-    - java Grepy
+  1. Navigate to your build configurations somewhere in your IDE
+  2. Edit the configurations to add command line arguments as specified above
+  3. Run the configuration
 
 ## Built With
 
