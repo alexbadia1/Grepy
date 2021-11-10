@@ -1,6 +1,8 @@
 # Grepy
 A version of the grep utility, in Java, that searches files for regular expression, pattern matches and produces dot graph file output for the automata used in the matching computation.
 
+## Example Output
+
 ![Example DFA](src/grep/graphs/-1402109018162850480.png?raw=true "Example DFA")
 
 ## Getting started
